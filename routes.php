@@ -1,10 +1,12 @@
 <?php
-require_once('./helper.php');
+date_default_timezone_set('Asia/Kolkata');
 require_once('./class.phpmailer.php');
 require_once('./statusCode.php');
+require_once('./helper.php');
+require_once('./purchase.php');
+require_once('./vendor.php');
 $helper = new Helper;
-$current_datetime = date("Y-m-d") . ' ' . date("H:i:s", STRTOTIME(date('h:i:sa')));
-
+$method = $_SERVER['REQUEST_METHOD'];
 try {
 	$data = json_decode(file_get_contents('php://input'), true);
 } catch (\Throwable $th) {
@@ -48,43 +50,35 @@ if (@$data['route']['page'] == 'login') {
 }
 
 if (@$data['route']['page'] == 'purchase') {
-	if ($data['route']['actions'] == 'addPurchase') {
-		@$data = $data['body'];
-		$helper->data = array(
-			':cateogry'				 	=>	$helper->clean_data($data['cateogry']),
-			':invoice_date'			 	=>	$helper->clean_data($data['invoiceDate']),
-			':invoice_number'		 	=>	$helper->clean_data($data['invoiceNumber']),
-			':sold_by'				 	=>	$helper->clean_data($data['soldBy']),
-			':gst_number'			 	=>	$helper->clean_data($data['gstNumber']),
-			':pan_number'			 	=>	$helper->clean_data($data['pancard']),
-			':product_name'			 	=>	$helper->clean_data($data['productName']),
-			':hsn_sac'				 	=>	$helper->clean_data($data['hsn_sac']),
-			':quantity'				 	=>	$helper->clean_data($data['quantity']),
-			':per_peice_price'		 	=>	$helper->clean_data($data['perPiecePrice']),
-			':transport_charges'	 	=>	$helper->clean_data($data['transportCharges']),
-			':tax_rate'				 	=>	$helper->clean_data($data['taxrate']),
-			':tax_type'				 	=>	$helper->clean_data($data['taxType']),
-			':igst'					 	=>	$helper->clean_data($data['igst']),
-			':cgst'					 	=>	$helper->clean_data($data['cgst']),
-			':sgst'					 	=>	$helper->clean_data($data['sgst']),
-			':tax_amount'			 	=>	$helper->clean_data($data['taxAmount']),
-			':taxable_amount'		 	=>	$helper->clean_data($data['taxableAmount']),
-			':total_amount_after_tax'	=>	$helper->clean_data($data['amountAfterTax']),
-			':created_by'				=>	@$_SESSION["admin_id"] || 1,
-			':create_date_time'			=>  date("Y-m-d h:i:sa")
-		);
-
-		$helper->query = "
-		INSERT INTO addpurchase
-		(cateogry, invoice_date, invoice_number, sold_by, gst_number, pan_number, product_name, hsn_sac, quantity, per_peice_price, transport_charges, tax_rate, tax_type, igst, cgst, sgst, tax_amount, taxable_amount, total_amount_after_tax, created_by, create_date_time) 
-		VALUES (:cateogry,:invoice_date,:invoice_number,:sold_by,:gst_number,:pan_number,:product_name,:hsn_sac,:quantity,:per_peice_price,:transport_charges,:tax_rate,:tax_type,:igst,:cgst,:sgst,:tax_amount,:taxable_amount,:total_amount_after_tax,:created_by,:create_date_time)
-		";
-		@$result = $helper->execute_query();
+	@$purchase = new Purchase();
+	if ($method === 'POST') { // For Create request
+		@$result = null;
+		if ($data['route']['actions'] == 'addPurchase') {
+			@$result = $purchase->create_purchase_order($data['body']);
+		}
 		if (!$result) http_response_code(BAD_REQUEST);
-		$output = array(
-			'status'	=>	$result,
-		);
-		echo json_encode($output);
+		echo json_encode(array('status'    =>    $result));
+	} else if ($method === 'PUT') { // For Update request
+
+	} else if ($method === "GET") { // For fetch requests
+
+	} else {
+		http_response_code(METHOD_NOT_ALLOWED);
+	}
+} else if (@$data['route']['page'] == 'vendor' || @$_GET['page'] === "vendor") {
+	@$vendor = new Vendor();
+	if ($method === 'POST') { // For Create request
+		if ($data['route']['actions'] == 'addVendor') {
+			$vendor->create_new_vendor($data['body']);
+		}
+	} else if ($method === 'PUT') { // For Update request
+
+	} else if ($method === "GET") { // For fetch requests
+		if (@$_GET['actions'] == 'getVendorList') {
+			$vendor->get_vendor_list();
+		}
+	} else {
+		//http_response_code(METHOD_NOT_ALLOWED);
 	}
 }
 

@@ -1,6 +1,4 @@
 <?php
-date_default_timezone_set('Asia/Kolkata');
-
 class Helper
 {
 	var $host;
@@ -112,6 +110,29 @@ class Helper
 			move_uploaded_file($_source_path, $target_path);
 
 			return $new_name;
+		}
+	}
+
+	function getPaginationQuery()
+	{
+		$pageNumber = $_GET['pageNumber'];
+		$itemPerPage = $_GET['itemPerPage'];
+		$offset = $itemPerPage * $pageNumber;
+		if (strlen($itemPerPage) > 0 && strlen($pageNumber) > 0) {
+			return " LIMIT " . $itemPerPage . " OFFSET " . $offset;
+		} else {
+			return "";
+		}
+	}
+
+	function getSortingQuery($allowedFileds)
+	{
+		$orderBy  = $_GET['orderBy']; // FieldName
+		$order  = $_GET['order']; // ASC/DESC
+		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
+			return " ORDER BY " . $orderBy . " " . $order;
+		} else {
+			return "";
 		}
 	}
 
