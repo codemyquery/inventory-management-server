@@ -50,9 +50,9 @@ if (@$data['route']['page'] == 'login') {
 }
 
 if (@$data['route']['page'] == 'purchase') {
+	@$result = null;
 	@$purchase = new Purchase();
 	if ($method === 'POST') { // For Create request
-		@$result = null;
 		if ($data['route']['actions'] == 'addPurchase') {
 			@$result = $purchase->create_purchase_order($data['body']);
 		}
@@ -66,11 +66,14 @@ if (@$data['route']['page'] == 'purchase') {
 		http_response_code(METHOD_NOT_ALLOWED);
 	}
 } else if (@$data['route']['page'] == 'vendor' || @$_GET['page'] === "vendor") {
+	@$result = null;
 	@$vendor = new Vendor();
 	if ($method === 'POST') { // For Create request
 		if ($data['route']['actions'] == 'addVendor') {
-			$vendor->create_new_vendor($data['body']);
+			$result = $vendor->create_new_vendor($data['body']);
 		}
+		if (!$result) http_response_code(BAD_REQUEST);
+		echo json_encode(array('status'    =>    $result));
 	} else if ($method === 'PUT') { // For Update request
 
 	} else if ($method === "GET") { // For fetch requests

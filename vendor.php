@@ -11,17 +11,17 @@ class Vendor
     function create_new_vendor($data)
     {
         $this->helper->data = array(
-            ':vendor_name'            =>    $this->helper->clean_data($data['vendorName']),
+            ':vendor_name'            =>    $this->helper->clean_data($data['vendor']),
             ':address'                =>    $this->helper->clean_data($data['address']),
             ':gst_number'             =>    $this->helper->clean_data($data['gstNumber']),
-            ':pan_card'               =>    $this->helper->clean_data($data['panCard']),
+            ':pan_card'               =>    $this->helper->clean_data($data['panNumber']),
             ':mobile'                 =>    $this->helper->clean_data($data['mobile']),
             ':email'                  =>    $this->helper->clean_data($data['email']),
             ':created_by'             =>    @$_SESSION["admin_id"] || 1,
             ':dateUpdate'             =>    date("Y-m-d h:i:sa"),
             ':dateCreate'             =>    date("Y-m-d h:i:sa")
         );
-        $this->helper->query = "INSERT INTO addpurchase (id, vendor_name, address, gst_number, pan_card, mobile, email, dateUpdate, dateCreate, created_by)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:dateUpdate,:dateCreate)";
+        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by, dateUpdate, dateCreate)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:dateUpdate,:dateCreate)";
         return $this->helper->execute_query();
     }
 

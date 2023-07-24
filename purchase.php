@@ -34,11 +34,7 @@ class Purchase
             ':dateUpdate'                =>    date("Y-m-d h:i:sa")
         );
 
-        $this->helper->query = "
-		INSERT INTO addpurchase
-		(cateogry, invoice_date, invoice_number, sold_by, gst_number, pan_number, product_name, hsn_sac, quantity, per_peice_price, transport_charges, tax_rate, tax_type, igst, cgst, sgst, tax_amount, taxable_amount, total_amount_after_tax, created_by, dateUpdate) 
-		VALUES (:cateogry,:invoice_date,:invoice_number,:sold_by,:gst_number,:pan_number,:product_name,:hsn_sac,:quantity,:per_peice_price,:transport_charges,:tax_rate,:tax_type,:igst,:cgst,:sgst,:tax_amount,:taxable_amount,:total_amount_after_tax,:created_by,:dateUpdate)
-		";
+        $this->helper->query = "INSERT INTO addpurchase (cateogry, invoice_date, invoice_number, sold_by, gst_number, pan_number, product_name, hsn_sac, quantity, per_peice_price, transport_charges, tax_rate, tax_type, igst, cgst, sgst, tax_amount, taxable_amount, total_amount_after_tax, created_by, dateUpdate) VALUES (:cateogry,:invoice_date,:invoice_number,:sold_by,:gst_number,:pan_number,:product_name,:hsn_sac,:quantity,:per_peice_price,:transport_charges,:tax_rate,:tax_type,:igst,:cgst,:sgst,:tax_amount,:taxable_amount,:total_amount_after_tax,:created_by,:dateUpdate)";
         return $this->helper->execute_query();
     }
 }
