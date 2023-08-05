@@ -18,26 +18,42 @@ class Vendor
             ':mobile'                 =>    $this->helper->clean_data($data['mobile']),
             ':email'                  =>    $this->helper->clean_data($data['email']),
             ':created_by'             =>    @$_SESSION["admin_id"] || 1,
-            ':dateUpdate'             =>    date("Y-m-d h:i:sa"),
-            ':dateCreate'             =>    date("Y-m-d h:i:sa")
+            ':date_update'             =>    date("Y-m-d h:i:sa"),
+            ':date_create'             =>    date("Y-m-d h:i:sa")
         );
-        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by, dateUpdate, dateCreate)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:dateUpdate,:dateCreate)";
+        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by, date_update, date_create)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:date_update,:date_create)";
         return $this->helper->execute_query();
     }
 
     function get_vendor_list()
     {
-        $this->helper->getSortingQuery(['vendor_name', 'dateUpdate']) . "Ashutosh";
-        $this->helper->query = "SELECT vendor.vendor_name as vendor, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id 
-        FROM vendor " . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate']) . $this->helper->getPaginationQuery();
+        $this->helper->query = "SELECT vendor_name as vendor, address, gst_number as gstNumber, pan_card as panNumber, mobile, email, date_update, id FROM vendor " . $this->helper->getSortingQuery(['vendor_name', 'date_update']) . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
-
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
         $total_Count = $this->helper->query_result();
         $output = array(
-            "rows"  =>    $total_rows,
-            "count" =>    $total_Count[0]['count']
+            "count" =>    (int)$total_Count[0]['count'],
+            "rows"  =>    formatVendorOutput($total_rows),
         );
         echo json_encode($output);
     }
+}
+
+function formatVendorOutput($total_rows)
+{
+    @$i = 0;
+    @$pages_array = [];
+    foreach ($total_rows as $row) {
+        $pages_array[] = (object) array(
+            "id" => ++$i,
+            "vendor" => $row['vendor'],
+            "dateUpdate" => $row['date_update'],
+            "emailVendor" => $row['email'],
+            "mobileVendor" => $row['mobile'],
+            "addressVendor" => $row['address'],
+            "gstNumberVendor" => $row['gstNumber'],
+            "panNumberVendor" => $row['panNumber'],
+        );
+    }
+    return $pages_array;
 }

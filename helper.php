@@ -115,9 +115,9 @@ class Helper
 
 	function getPaginationQuery()
 	{
-		$pageNumber = $_GET['pageNumber'];
-		$itemPerPage = $_GET['itemPerPage'];
-		$offset = $itemPerPage * $pageNumber;
+		$pageNumber = @$_GET['pageNumber'];
+		$itemPerPage = @$_GET['itemPerPage'];
+		$offset = (int)$itemPerPage * (int)$pageNumber;
 		if (strlen($itemPerPage) > 0 && strlen($pageNumber) > 0) {
 			return " LIMIT " . $itemPerPage . " OFFSET " . $offset;
 		} else {
@@ -127,8 +127,8 @@ class Helper
 
 	function getSortingQuery($allowedFileds)
 	{
-		$orderBy  = $_GET['orderBy']; // FieldName
-		$order  = $_GET['order']; // ASC/DESC
+		$orderBy  = @$_GET['orderBy']; // FieldName
+		$order  = @$_GET['order']; // ASC/DESC
 		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
 			return " ORDER BY " . $orderBy . " " . $order;
 		} else {
