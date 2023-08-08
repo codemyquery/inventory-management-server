@@ -17,17 +17,18 @@ class Vendor
             ':pan_card'               =>    $this->helper->clean_data($data['panNumber']),
             ':mobile'                 =>    $this->helper->clean_data($data['mobile']),
             ':email'                  =>    $this->helper->clean_data($data['email']),
-            ':created_by'             =>    @$_SESSION["admin_id"] || 1,
-            ':date_update'             =>    date("Y-m-d h:i:sa"),
-            ':date_create'             =>    date("Y-m-d h:i:sa")
+            ':created_by'             =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by, date_update, date_create)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:date_update,:date_create)";
+        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by)";
         return $this->helper->execute_query();
     }
 
     function get_vendor_list()
     {
-        $this->helper->query = "SELECT vendor_name as vendor, address, gst_number as gstNumber, pan_card as panNumber, mobile, email, date_update, id FROM vendor " . $this->helper->getSortingQuery(['vendor_name', 'date_update']) . $this->helper->getPaginationQuery();
+        $this->helper->query = "SELECT *FROM vendor "
+            . $this->helper->getSortingQuery(['vendor_name', 'date_update'])
+            . $this->helper->getPaginationQuery();
+
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
         $total_Count = $this->helper->query_result();
@@ -46,13 +47,14 @@ function formatVendorOutput($total_rows)
     foreach ($total_rows as $row) {
         $pages_array[] = (object) array(
             "id" => ++$i,
-            "vendor" => $row['vendor'],
-            "dateUpdate" => $row['date_update'],
+            "vendorId" => $row['vendor_id'],
+            "vendor" => $row['vendor_name'],
+            "dateUpdate" => $row['date_updated'],
             "emailVendor" => $row['email'],
             "mobileVendor" => $row['mobile'],
             "addressVendor" => $row['address'],
-            "gstNumberVendor" => $row['gstNumber'],
-            "panNumberVendor" => $row['panNumber'],
+            "gstNumberVendor" => $row['gst_number'],
+            "panNumberVendor" => $row['pan_card'],
         );
     }
     return $pages_array;

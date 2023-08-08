@@ -136,6 +136,33 @@ class Helper
 		}
 	}
 
+	function getFilterQuery($allowedFileds){
+		@$query = "";
+		@$Valid_Operators = ['$in', '$like', '$eq', '$neq'];
+		$operator  = @$_GET['operator']; // search opeartor
+		$value  = @$_GET['value']; // value to search
+		$field  = @$_GET['field']; // field to search
+		if (strlen($operator) > 0 && strlen($value) > 0 && in_array($operator, $Valid_Operators) && in_array($field, $allowedFileds)) {
+			if($field === 'productName'){
+				switch ($operator) {
+					case '$in':
+						$query = " WHERE product_name ";
+						break;
+					case '$like':
+						$query = " WHERE product_name ";
+						break;
+					case '$eq':
+						$query= " WHERE product_name='".$value."' ";
+						break;
+					case '$neq':
+						$query = " WHERE product_name ";
+						break;
+				}
+			}
+		}
+		return $query;
+	}
+
 
 	/* 
 	function admin_session_private()
