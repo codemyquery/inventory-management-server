@@ -11,6 +11,7 @@ class Vendor
     function create_new_vendor($data)
     {
         $this->helper->data = array(
+            ':vendor_id'              =>    $this->helper->clean_data($data['id']),
             ':vendor_name'            =>    $this->helper->clean_data($data['vendor']),
             ':address'                =>    $this->helper->clean_data($data['address']),
             ':gst_number'             =>    $this->helper->clean_data($data['gstNumber']),
@@ -19,7 +20,7 @@ class Vendor
             ':email'                  =>    $this->helper->clean_data($data['email']),
             ':created_by'             =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO vendor (vendor_name, address, gst_number, pan_card, mobile, email, created_by)  VALUES (:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by)";
+        $this->helper->query = "INSERT INTO vendor (vendor_id, vendor_name, address, gst_number, pan_card, mobile, email, created_by)  VALUES (:vendor_id,:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by)";
         return $this->helper->execute_query();
     }
 
