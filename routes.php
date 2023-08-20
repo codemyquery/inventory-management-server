@@ -6,6 +6,7 @@ require_once('./helper.php');
 require_once('./purchase.php');
 require_once('./vendor.php');
 require_once('./product.php');
+require_once('./expense.php');
 $helper = new Helper;
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -101,6 +102,22 @@ if (@$bodyRawData['route']['page'] == 'purchase') {
 	} else if ($method === "POST") {
 		if ($bodyRawData['route']['actions'] == 'addProduct') {
 			$result = $product->create_new_product($bodyRawData['data']);
+		}
+		if (!$result) http_response_code(BAD_REQUEST);
+		echo json_encode(array('status'    =>    $result));
+	} else {
+		http_response_code(METHOD_NOT_ALLOWED);
+	}
+} else if (@$bodyRawData['route']['page'] == 'expense' || @$_GET['page'] === "expense") {
+	@$result = null;
+	@$product = new Expense();
+	if ($method === "GET") { // For fetch requests
+		if (@$_GET['actions'] == 'getExpenseList') {
+			$product->get_expense_list();
+		}
+	} else if ($method === "POST") {
+		if ($bodyRawData['route']['actions'] == 'addExpense') {
+			$result = $product->create_new_expense($bodyRawData['data']);
 		}
 		if (!$result) http_response_code(BAD_REQUEST);
 		echo json_encode(array('status'    =>    $result));

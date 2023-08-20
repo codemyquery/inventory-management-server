@@ -47,8 +47,9 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT addpurchase, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id 
-        FROM addpurchase " . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate']) . $this->helper->getPaginationQuery();
+        $this->helper->query = "SELECT addpurchase, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id FROM addpurchase " 
+            . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate']) 
+            . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
         $total_Count = $this->helper->query_result();
