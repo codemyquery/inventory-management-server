@@ -93,10 +93,9 @@ class Purchase
             . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate'])
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
-        $total_Count = $this->helper->query_result();
+        $this->helper->query = "SELECT id as count FROM vendor";
         $output = array(
-            "count" =>    $total_Count[0]['count'],
+            "count" =>    $this->helper->total_row(),
             "rows"  =>    formatPurchase($total_rows)
         );
         echo json_encode($output);

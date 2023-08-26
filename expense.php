@@ -31,11 +31,10 @@ class Expense
             . $this->helper->getSortingQuery(['expenseDate', 'dateUpdated'])
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT COUNT(DISTINCT id) as count FROM expense "
+        $this->helper->query = "SELECT id FROM expense "
             . $this->helper->getFilterQuery(['expenseDate', 'expensePurpose', 'paymentMode', 'dateUpdated']);
-        $total_Count = $this->helper->query_result();
         $output = array(
-            "count" =>    (int)$total_Count[0]['count'],
+            "count" =>    (int)$this->helper->total_row(),
             "rows"  =>    formatExpenseOutput($total_rows),
         );
         echo json_encode($output);
