@@ -15,10 +15,12 @@ class Product
             ':hsn_sac'                =>    $this->helper->clean_data(@$data['hsnSac']),
             ':per_peice_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
             ':quantity'               =>    $this->helper->clean_data(@$data['quantity']),
+            ':taxrate'                =>    $this->helper->clean_data(@$data['quantity']),
             ':created_by'             =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO products (product_name, hsn_sac, per_peice_price, quantity, created_by)  
-        VALUES (:product_name,:hsn_sac,:per_peice_price,:quantity,:created_by)";
+        $this->helper->query = "INSERT INTO 
+        products (product_name, hsn_sac, per_peice_price, quantity, taxrate, created_by)  
+        VALUES (:product_name,:hsn_sac,:per_peice_price,:quantity,:taxrate,:created_by)";
         return $this->helper->execute_query();
     }
 

@@ -1,5 +1,6 @@
 <?php
 require_once('./helper.php');
+require_once('./product.php');
 class Purchase
 {
     var $helper;
@@ -10,30 +11,71 @@ class Purchase
     function create_purchase_order($data)
     {
         $this->helper->data = array(
+            ':sold_by'                   =>    $this->helper->clean_data($data['vendorId']),
             ':cateogry'                  =>    $this->helper->clean_data($data['cateogry']),
             ':invoice_date'              =>    $this->helper->clean_data($data['invoiceDate']),
             ':invoice_number'            =>    $this->helper->clean_data($data['invoiceNumber']),
-            ':sold_by'                   =>    $this->helper->clean_data($data['soldBy']),
-            ':gst_number'                =>    $this->helper->clean_data($data['gstNumber']),
-            ':pan_number'                =>    $this->helper->clean_data($data['pancard']),
-            ':product_name'              =>    $this->helper->clean_data($data['productName']),
-            ':hsn_sac'                   =>    $this->helper->clean_data($data['hsnSac']),
-            ':quantity'                  =>    $this->helper->clean_data($data['quantity']),
-            ':per_peice_price'           =>    $this->helper->clean_data($data['perPiecePrice']),
-            ':transport_charges'         =>    $this->helper->clean_data($data['transportCharges']),
-            ':tax_rate'                  =>    $this->helper->clean_data($data['taxrate']),
+            ':products'                  =>    json_encode($data['products']),
             ':tax_type'                  =>    $this->helper->clean_data($data['taxType']),
-            ':igst'                      =>    $this->helper->clean_data($data['igst']),
             ':cgst'                      =>    $this->helper->clean_data($data['cgst']),
             ':sgst'                      =>    $this->helper->clean_data($data['sgst']),
+            ':igst'                      =>    $this->helper->clean_data($data['igst']),
             ':tax_amount'                =>    $this->helper->clean_data($data['taxAmount']),
             ':taxable_amount'            =>    $this->helper->clean_data($data['taxableAmount']),
             ':total_amount_after_tax'    =>    $this->helper->clean_data($data['amountAfterTax']),
-            ':credit_note_date'          =>    null,
-            ':created_by'                =>    @$_SESSION["admin_id"] || 1,
+            ':transport_charges'         =>    $this->helper->clean_data($data['transportCharges']),
+            ':payment_status'            =>    $this->helper->clean_data($data['paymentStatus']),
+            ':amount_paid'               =>    $this->helper->clean_data($data['amountPaid']),
+            ':credit_note'               =>    $this->helper->clean_data($data['creditNote']),
+            ':credit_note_date'          =>    $this->helper->clean_data(($data['creditNoteDate'])),
+            ':created_by'                =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO addpurchase (cateogry, invoice_date, invoice_number, sold_by, gst_number, pan_number, product_name, hsn_sac, quantity, per_peice_price, transport_charges, tax_rate, tax_type, igst, cgst, sgst, tax_amount, taxable_amount, total_amount_after_tax, credit_note, credit_note_date, created_by, date_update) VALUES (:cateogry,:invoice_date,:invoice_number,:sold_by,:gst_number,:pan_number,:product_name,:hsn_sac,:quantity,:per_peice_price,:transport_charges,:tax_rate,:tax_type,:igst,:cgst,:sgst,:tax_amount,:taxable_amount,:total_amount_after_tax,:created_by)";
-        return $this->helper->execute_query();
+        $this->helper->query = "INSERT INTO addpurchase (
+            sold_by, 
+            cateogry, 
+            invoice_date, 
+            invoice_number, 
+            products, 
+            tax_type, 
+            cgst, 
+            sgst, 
+            igst, 
+            tax_amount, 
+            taxable_amount, 
+            total_amount_after_tax, 
+            transport_charges, 
+            payment_status, 
+            amount_paid, 
+            credit_note, 
+            credit_note_date, 
+            created_by) 
+        VALUES (
+            :sold_by,
+            :cateogry,
+            :invoice_date,
+            :invoice_number,
+            :products,
+            :tax_type,
+            :cgst,
+            :sgst,
+            :igst,
+            :tax_amount,
+            :taxable_amount,
+            :total_amount_after_tax,
+            :transport_charges,
+            :payment_status,
+            :amount_paid,
+            :credit_note,
+            :credit_note_date,
+            :created_by)";
+        @$query_result = $this->helper->execute_query();
+        if($query_result){
+            @$product = new Product();
+            for ($i=0; $i < count($data['products']); $i++) { 
+                $query_result = $product->create_new_product($data['products'][$i]);
+            }
+        }
+        return $query_result;
     }
 
     function get_purchase_list()
@@ -47,8 +89,8 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT addpurchase, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id FROM addpurchase " 
-            . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate']) 
+        $this->helper->query = "SELECT addpurchase, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id FROM addpurchase "
+            . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate'])
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
