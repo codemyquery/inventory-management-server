@@ -132,7 +132,7 @@ class Helper
 		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
 			return " ORDER BY " . $orderBy . " " . $order;
 		} else {
-			return "";
+			return " ORDER BY date_updated DESC";
 		}
 	}
 
