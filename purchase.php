@@ -89,11 +89,9 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT addpurchase, vendor.address, vendor.gst_number as gstNumber, vendor.pan_card as panNumber, mobile, email, dateUpdate, id FROM addpurchase "
-            . $this->helper->getSortingQuery(['vendor_name', 'dateUpdate'])
-            . $this->helper->getPaginationQuery();
+        $this->helper->query = "SELECT * FROM addpurchase ";
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT id as count FROM vendor";
+        $this->helper->query = "SELECT * FROM addpurchase ";
         $output = array(
             "count" =>    $this->helper->total_row(),
             "rows"  =>    formatPurchase($total_rows)
@@ -113,22 +111,11 @@ function formatPurchase($total_rows)
             "invoiceDate"           => $row['invoice_date'],
             "invoiceNumber"         => $row['invoice_number'],
             "soldBy"                => $row['sold_by'],
-            "gstNumber"             => $row['gst_number'],
-            "panNumber"             => $row['pan_number'],
-            "productName"           => $row['product_name'],
-            "hsnSac"                => $row['hsn_sac'],
-            "quantity"              => $row['quantity'],
-            "perPeicePrice"         => $row['per_peice_price'],
             "transportCharges"      => $row['transport_charges'],
-            "taxRate"               => $row['tax_rate'],
             "taxType"               => $row['tax_type'],
-            "igst"                  => $row['igst'],
-            "cgst"                  => $row['cgst'],
-            "sgst"                  => $row['sgst'],
-            "hsnSac"                => $row['hsn_sac'],
             "taxAmount"             => $row['tax_amount'],
             "taxableAmount"         => $row['taxable_amount'],
-            "totalAmountAfterTax"   => $row['total_amount_after_tax'],
+            "amountAfterTax"   => $row['total_amount_after_tax'],
             "creditNote"            => $row['credit_note'],
             "creditNoteDate"        => $row['credit_note_date'],
             "createdBy"             => $row['created_by'],

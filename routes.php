@@ -64,10 +64,14 @@ if (@$bodyRawData['route']['page'] == 'login') {
 	}
 }
 
-if (@$bodyRawData['route']['page'] == 'purchase') {
+if (@$bodyRawData['route']['page'] == 'purchase' || @$_GET['page'] === "purchase") {
 	@$result = null;
 	@$purchase = new Purchase();
-	if ($method === 'POST') { // For Create request
+	if($method === 'GET'){
+		if (@$_GET['actions'] == 'getPurchaseList') {
+			$purchase->get_purchase_list();
+		}
+	}else if ($method === 'POST') { // For Create request
 		if ($bodyRawData['route']['actions'] == 'addPurchase') {
 			@$result = $purchase->create_purchase_order($bodyRawData['data']);
 		}
