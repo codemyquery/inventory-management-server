@@ -89,9 +89,9 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT * FROM addpurchase ";
+        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id";
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT * FROM addpurchase ";
+        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id";
         $output = array(
             "count" =>    $this->helper->total_row(),
             "rows"  =>    formatPurchase($total_rows)
@@ -110,12 +110,12 @@ function formatPurchase($total_rows)
             "cateogry"              => $row['cateogry'],
             "invoiceDate"           => $row['invoice_date'],
             "invoiceNumber"         => $row['invoice_number'],
-            "soldBy"                => $row['sold_by'],
+            "soldBy"                => $row['vendor_name'],
             "transportCharges"      => $row['transport_charges'],
             "taxType"               => $row['tax_type'],
             "taxAmount"             => $row['tax_amount'],
             "taxableAmount"         => $row['taxable_amount'],
-            "amountAfterTax"   => $row['total_amount_after_tax'],
+            "amountAfterTax"        => $row['total_amount_after_tax'],
             "creditNote"            => $row['credit_note'],
             "creditNoteDate"        => $row['credit_note_date'],
             "createdBy"             => $row['created_by'],
