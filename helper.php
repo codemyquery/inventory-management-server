@@ -163,6 +163,9 @@ class Helper
 		return $query;
 	}
 
+	function get_current_datetimestamp(){
+		return date("Y-m-d") . ' ' . date("H:i:s", STRTOTIME(date('h:i:sa')));
+	}
 
 	/* 
 	function admin_session_private()

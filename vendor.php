@@ -18,10 +18,38 @@ class Vendor
             ':pan_card'               =>    $this->helper->clean_data($data['panNumber']),
             ':mobile'                 =>    $this->helper->clean_data($data['mobile']),
             ':email'                  =>    $this->helper->clean_data($data['email']),
-            ':created_by'             =>    @$_SESSION["admin_id"] || 1
+            ':created_by'             =>    @$_SESSION["admin_id"] || 1,
+            ':updated_by'             =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO vendor (vendor_id, vendor_name, address, gst_number, pan_card, mobile, email, created_by)  VALUES (:vendor_id,:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by)";
+        $this->helper->query = "INSERT INTO vendor (vendor_id, vendor_name, address, gst_number, pan_card, mobile, email, created_by, updated_by)  VALUES (:vendor_id,:vendor_name,:address,:gst_number,:pan_card,:mobile,:email,:created_by,:updated_by)";
         return $this->helper->execute_query();
+    }
+
+    function update_vendor($data){
+        $this->helper->data = array(
+            ':vendor_id'              =>    $this->helper->clean_data($data['id']),
+            ':vendor_name'            =>    $this->helper->clean_data($data['vendor']),
+            ':address'                =>    $this->helper->clean_data($data['address']),
+            ':mobile'                 =>    $this->helper->clean_data($data['mobile']),
+            ':email'                  =>    $this->helper->clean_data($data['email']),
+            ':updated_by'             =>    @$_SESSION["admin_id"] || 1,
+            ':date_updated'           =>    $this->helper->get_current_datetimestamp()
+        );
+        $this->helper->query = "UPDATE vendor SET 
+        vendor_name = :vendor_name, 
+        address = :address, 
+        mobile = :mobile, 
+        email = :email, 
+        updated_by = :updated_by,
+        date_updated = :date_updated
+        WHERE vendor_id = :vendor_id";
+        return $this->helper->execute_query();
+    }
+
+    function get_vendor($vendorId){
+        $this->helper->query = "SELECT *FROM vendor WHERE vendor_id='$vendorId'";
+        $vendor = $this->helper->query_result();
+        echo json_encode(formatVendorOutput($vendor)[0]);
     }
 
     function get_vendor_list()
@@ -47,8 +75,7 @@ function formatVendorOutput($total_rows)
     @$pages_array = [];
     foreach ($total_rows as $row) {
         $pages_array[] = (object) array(
-            "id" => ++$i,
-            "vendorId" => $row['vendor_id'],
+            "id" => $row['vendor_id'],
             "vendor" => $row['vendor_name'],
             "dateUpdate" => $row['date_updated'],
             "emailVendor" => $row['email'],

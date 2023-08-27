@@ -8,6 +8,7 @@ class Purchase
     {
         $this->helper = new Helper();
     }
+
     function create_purchase_order($data)
     {
         $this->helper->data = array(
@@ -78,6 +79,13 @@ class Purchase
         return $query_result;
     }
 
+    function get_purchase($invoiceNumber){
+        $this->helper->data = array( ':invoiceNumber' => $this->helper->clean_data($invoiceNumber) );
+        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
+        $purchase = $this->helper->query_result();
+        echo json_encode(formatPurchase($purchase)[0]);
+    }
+
     function get_purchase_list()
     {
         $this->helper->getSortingQuery([
@@ -110,7 +118,8 @@ function formatPurchase($total_rows)
             "cateogry"              => $row['cateogry'],
             "invoiceDate"           => $row['invoice_date'],
             "invoiceNumber"         => $row['invoice_number'],
-            "soldBy"                => $row['vendor_name'],
+            "vendorName"            => $row['vendor_name'],
+            "vendorId"              => $row['vendor_id'],
             "transportCharges"      => $row['transport_charges'],
             "taxType"               => $row['tax_type'],
             "taxAmount"             => $row['tax_amount'],
@@ -119,7 +128,12 @@ function formatPurchase($total_rows)
             "creditNote"            => $row['credit_note'],
             "creditNoteDate"        => $row['credit_note_date'],
             "createdBy"             => $row['created_by'],
-            "dateUpdated"           => $row['date_updated']
+            "dateUpdated"           => $row['date_updated'],
+            "paymentStatus"         => $row['payment_status'],
+            "amountPaid"            => $row['amount_paid'],
+            "products"              => json_decode($row['products']),
+            "gstNumber"             => $row['gst_number'],
+            "panNumber"             => $row['pan_card']
         );
     }
     return $pages_array;
