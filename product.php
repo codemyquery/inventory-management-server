@@ -43,7 +43,7 @@ class Product
     {
         $this->helper->query = "SELECT product_name id, product_name, hsn_sac, per_peice_price, quantity, created_by, date_updated FROM products "
             . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated'])
-            . $this->helper->getSortingQuery(['product_name', 'date_update'])
+            . $this->helper->getSortingQuery('products',['product_name', 'date_update'])
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT product_name FROM products " . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);

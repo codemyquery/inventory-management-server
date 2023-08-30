@@ -88,7 +88,7 @@ class Purchase
 
     function get_purchase_list()
     {
-        $this->helper->getSortingQuery([
+        $this->helper->getSortingQuery('addpurchase',[
             'dateUpdate',
             'credit_note',
             'credit_note_date',
@@ -97,7 +97,10 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id";
+        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id"
+        . $this->helper->getSortingQuery('addpurchase', ['date_updated'])
+        . $this->helper->getPaginationQuery();
+
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id";
         $output = array(

@@ -125,14 +125,14 @@ class Helper
 		}
 	}
 
-	function getSortingQuery($allowedFileds)
+	function getSortingQuery( $tableName, $allowedFileds)
 	{
 		$orderBy  = @$_GET['orderBy']; // FieldName
 		$order  = @$_GET['order']; // ASC/DESC
 		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
-			return " ORDER BY " . $orderBy . " " . $order;
+			return " ORDER BY " .$tableName .".". $orderBy . " " . $order;
 		} else {
-			return " ORDER BY date_updated DESC";
+			return "";
 		}
 	}
 
@@ -165,6 +165,10 @@ class Helper
 
 	function get_current_datetimestamp(){
 		return date("Y-m-d") . ' ' . date("H:i:s", STRTOTIME(date('h:i:sa')));
+	}
+
+	function delete_query_from_array($arrayData){
+		return " (".str_repeat("?,", count($arrayData) - 1)."?)";
 	}
 
 	/* 

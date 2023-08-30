@@ -55,7 +55,7 @@ class Vendor
     function get_vendor_list()
     {
         $this->helper->query = "SELECT *FROM vendor "
-            . $this->helper->getSortingQuery(['vendor_name', 'date_update'])
+            . $this->helper->getSortingQuery('vendor',['vendor_name', 'date_update'])
             . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
