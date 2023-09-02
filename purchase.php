@@ -31,7 +31,7 @@ class Purchase
             ':credit_note_date'          =>    $this->helper->clean_data(($data['creditNoteDate'])),
             ':created_by'                =>    @$_SESSION["admin_id"] || 1
         );
-        $this->helper->query = "INSERT INTO addpurchase (
+        $this->helper->query = "INSERT INTO purchase (
             sold_by, 
             cateogry, 
             invoice_date, 
@@ -81,14 +81,14 @@ class Purchase
 
     function get_purchase($invoiceNumber){
         $this->helper->data = array( ':invoiceNumber' => $this->helper->clean_data($invoiceNumber) );
-        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
+        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
         $purchase = $this->helper->query_result();
         echo json_encode(formatPurchase($purchase)[0]);
     }
 
     function get_purchase_list()
     {
-        $this->helper->getSortingQuery('addpurchase',[
+        $this->helper->getSortingQuery('purchase',[
             'dateUpdate',
             'credit_note',
             'credit_note_date',
@@ -97,12 +97,12 @@ class Purchase
             'sold_by',
             'gst_number'
         ]);
-        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id"
-        . $this->helper->getSortingQuery('addpurchase', ['date_updated'])
+        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
+        . $this->helper->getSortingQuery('purchase', ['date_updated'])
         . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT * FROM addpurchase INNER JOIN vendor ON addpurchase.sold_by=vendor.vendor_id";
+        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id";
         $output = array(
             "count" =>    $this->helper->total_row(),
             "rows"  =>    formatPurchase($total_rows)
