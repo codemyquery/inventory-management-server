@@ -3,9 +3,9 @@ require_once('./helper.php');
 class Product
 {
     var $helper;
-    function __construct()
+    function __construct($helper)
     {
-        $this->helper = new Helper();
+        $this->helper = $helper;
     }
 
     function create_new_product($data)
@@ -15,8 +15,9 @@ class Product
             ':hsn_sac'                =>    $this->helper->clean_data(@$data['hsnSac']),
             ':per_peice_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
             ':quantity'               =>    $this->helper->clean_data(@$data['quantity']),
-            ':taxrate'                =>    $this->helper->clean_data(@$data['quantity']),
-            ':created_by'             =>    @$_SESSION["admin_id"] || 1
+            ':taxrate'                =>    $this->helper->clean_data(@$data['taxrate']),
+            ':created_by'             =>    @$_SESSION["admin_id"] || 1,
+            ':date_created'           =>    $this->helper->get_current_datetimestamp()
         );
         $this->helper->query = "SELECT * FROM products WHERE product_name='" . $data['productName'] . "'";
         if ($this->helper->total_row() !== 0) {
@@ -30,11 +31,30 @@ class Product
             }
             $this->helper->query = "UPDATE products set 
             quantity='" . $totalQuantity . "', 
-            per_peice_price='" . $perPiecePrice . "'
+            per_peice_price='" . $perPiecePrice . "',
+            updated_by='" . @$_SESSION["admin_id"] || 1 . "',
             WHERE id='" . $product['id'] . "'";
             return $this->helper->execute_query();
         } else {
-            $this->helper->query = "INSERT INTO products (product_name, hsn_sac, per_peice_price, quantity, taxrate, created_by) VALUES (:product_name,:hsn_sac,:per_peice_price,:quantity,:taxrate,:created_by)";
+            $this->helper->query = "INSERT INTO products 
+            (
+                product_name, 
+                hsn_sac, 
+                per_peice_price, 
+                quantity, 
+                taxrate, 
+                created_by, 
+                date_created
+            ) 
+            VALUES (
+                :product_name,
+                :hsn_sac,
+                :per_peice_price,
+                :quantity,
+                :taxrate,
+                :created_by,
+                :date_created
+            )";
             return $this->helper->execute_query();
         }
     }

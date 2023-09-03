@@ -8,7 +8,7 @@ require_once('./vendor.php');
 require_once('./product.php');
 require_once('./expense.php');
 $method = $_SERVER['REQUEST_METHOD'];
-
+$helper = new Helper();
 //*****************Allow cross origion******************** */
 header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
 header('Access-Control-Allow-Credentials: true');
@@ -36,7 +36,7 @@ if ($page === 'login') {
 	}
 } else if ($page === 'purchase') {
 	$result = null;
-	$purchase = new Purchase();
+	$purchase = new Purchase($helper);
 	if ($method === 'GET') {
 		if ($action === 'getPurchaseList') {
 			$purchase->get_purchase_list();
@@ -54,7 +54,7 @@ if ($page === 'login') {
 	}
 } else if ($page === 'vendor') {
 	$result = null;
-	$vendor = new Vendor();
+	$vendor = new Vendor($helper);
 	if ($method === 'POST') { // For Create request
 		if ($action === 'addVendor') {
 			$result = $vendor->create_new_vendor($bodyRawData['data']);
@@ -78,7 +78,7 @@ if ($page === 'login') {
 	}
 } else if ($page === 'product') {
 	$result = null;
-	$product = new Product();
+	$product = new Product($helper);
 	if ($method === "GET") { // For fetch requests
 		if ($action === 'getProductList') {
 			$product->get_product_list();
@@ -95,7 +95,7 @@ if ($page === 'login') {
 	}
 } else if ($page === 'expense') {
 	$result = null;
-	$expense = new Expense();
+	$expense = new Expense($helper);
 	if ($method === "GET") { // For fetch requests
 		if ($action === 'getExpenseList') {
 			$expense->get_expense_list();

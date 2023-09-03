@@ -1,110 +1,115 @@
 <?php
 require_once('./helper.php');
 require_once('./product.php');
+require_once('./products-against-purchase.php');
+require_once('./payment-against-purchase.php');
 class Purchase
 {
     var $helper;
-    function __construct()
+    function __construct($helper)
     {
-        $this->helper = new Helper();
+        $this->helper = $helper;
     }
 
     function create_purchase_order($data)
     {
-        $this->helper->data = array(
-            ':sold_by'                   =>    $this->helper->clean_data($data['vendorId']),
-            ':cateogry'                  =>    $this->helper->clean_data($data['cateogry']),
-            ':invoice_date'              =>    $this->helper->clean_data($data['invoiceDate']),
-            ':invoice_number'            =>    $this->helper->clean_data($data['invoiceNumber']),
-            ':products'                  =>    json_encode($data['products']),
-            ':tax_type'                  =>    $this->helper->clean_data($data['taxType']),
-            ':cgst'                      =>    $this->helper->clean_data($data['cgst']),
-            ':sgst'                      =>    $this->helper->clean_data($data['sgst']),
-            ':igst'                      =>    $this->helper->clean_data($data['igst']),
-            ':tax_amount'                =>    $this->helper->clean_data($data['taxAmount']),
-            ':taxable_amount'            =>    $this->helper->clean_data($data['taxableAmount']),
-            ':total_amount_after_tax'    =>    $this->helper->clean_data($data['amountAfterTax']),
-            ':transport_charges'         =>    $this->helper->clean_data($data['transportCharges']),
-            ':payment_status'            =>    $this->helper->clean_data($data['paymentStatus']),
-            ':amount_paid'               =>    $this->helper->clean_data($data['amountPaid']),
-            ':credit_note'               =>    $this->helper->clean_data($data['creditNote']),
-            ':credit_note_date'          =>    $this->helper->clean_data(($data['creditNoteDate'])),
-            ':created_by'                =>    @$_SESSION["admin_id"] || 1
-        );
-        $this->helper->query = "INSERT INTO purchase (
-            sold_by, 
-            cateogry, 
-            invoice_date, 
-            invoice_number, 
-            products, 
-            tax_type, 
-            cgst, 
-            sgst, 
-            igst, 
-            tax_amount, 
-            taxable_amount, 
-            total_amount_after_tax, 
-            transport_charges, 
-            payment_status, 
-            amount_paid, 
-            credit_note, 
-            credit_note_date, 
-            created_by) 
-        VALUES (
-            :sold_by,
-            :cateogry,
-            :invoice_date,
-            :invoice_number,
-            :products,
-            :tax_type,
-            :cgst,
-            :sgst,
-            :igst,
-            :tax_amount,
-            :taxable_amount,
-            :total_amount_after_tax,
-            :transport_charges,
-            :payment_status,
-            :amount_paid,
-            :credit_note,
-            :credit_note_date,
-            :created_by)";
-        @$query_result = $this->helper->execute_query();
-        if($query_result){
-            @$product = new Product();
-            for ($i=0; $i < count($data['products']); $i++) { 
-                $query_result = $product->create_new_product($data['products'][$i]);
+        try {
+            $this->helper->connect->beginTransaction();
+            $this->helper->data = array(
+                ':sold_by'                   =>    $this->helper->clean_data($data['vendorId']),
+                ':cateogry'                  =>    $this->helper->clean_data($data['cateogry']),
+                ':invoice_date'              =>    $this->helper->clean_data($data['invoiceDate']),
+                ':invoice_number'            =>    $this->helper->clean_data($data['invoiceNumber']),
+                ':tax_type'                  =>    $this->helper->clean_data($data['taxType']),
+                ':cgst'                      =>    $this->helper->clean_data($data['cgst']),
+                ':sgst'                      =>    $this->helper->clean_data($data['sgst']),
+                ':igst'                      =>    $this->helper->clean_data($data['igst']),
+                ':tax_amount'                =>    $this->helper->clean_data($data['taxAmount']),
+                ':taxable_amount'            =>    $this->helper->clean_data($data['taxableAmount']),
+                ':total_amount_after_tax'    =>    $this->helper->clean_data($data['amountAfterTax']),
+                ':transport_charges'         =>    $this->helper->clean_data($data['transportCharges']),
+                ':payment_status'            =>    $this->helper->clean_data($data['paymentStatus']),
+                ':amount_paid'               =>    $this->helper->clean_data($data['amountPaid']),
+                ':created_by'                =>    @$_SESSION["admin_id"] || 1
+            );
+            $this->helper->query = "INSERT INTO purchase (
+                sold_by, 
+                cateogry, 
+                invoice_date, 
+                invoice_number, 
+                tax_type, 
+                cgst, 
+                sgst, 
+                igst, 
+                tax_amount, 
+                taxable_amount, 
+                total_amount_after_tax, 
+                transport_charges, 
+                payment_status, 
+                amount_paid, 
+                created_by) 
+            VALUES (
+                :sold_by,
+                :cateogry,
+                :invoice_date,
+                :invoice_number,
+                :tax_type,
+                :cgst,
+                :sgst,
+                :igst,
+                :tax_amount,
+                :taxable_amount,
+                :total_amount_after_tax,
+                :transport_charges,
+                :payment_status,
+                :amount_paid,
+                :created_by)";
+            if($this->helper->execute_query()){
+                @$product = new Product($this->helper);
+                for ($i=0; $i < count($data['products']); $i++) { 
+                    if(!$product->create_new_product($data['products'][$i])){
+                        throw new Exception('Some product insertion failed due to some constrain');
+                    }
+                }
+                for ($i=0; $i < count($data['products']); $i++) {
+                    @$productAgainstPurchase = new ProductAgainstPurchase($this->helper);
+                    if(!$productAgainstPurchase->create_product_against_purchase($data['products'][$i], $data['invoiceNumber'])){
+                        throw new Exception('Some products against purchase has not inserted');
+                        break;
+                    }
+                }
+                $this->helper->connect->commit();
+            }else{
+                throw new Exception('Unable to insert the record for invoice table');
             }
+        } catch (\Throwable $th) {
+            $this->helper->connect->rollBack();
+            return false;
         }
-        return $query_result;
+        return true;
     }
 
     function get_purchase($invoiceNumber){
         $this->helper->data = array( ':invoiceNumber' => $this->helper->clean_data($invoiceNumber) );
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
         $purchase = $this->helper->query_result();
+        $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
+        $paymentHistory = $paymentAgainstPurchase->get_payment_against_purchase($purchase[0]['invoice_number']);
+        $purchase[0]['paymentHistory'] = $paymentHistory;
         echo json_encode(formatPurchase($purchase)[0]);
     }
 
     function get_purchase_list()
     {
-        $this->helper->getSortingQuery('purchase',[
-            'dateUpdate',
-            'credit_note',
-            'credit_note_date',
-            'invoice_date',
-            'invoice_number',
-            'sold_by',
-            'gst_number'
-        ]);
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
         . $this->helper->getSortingQuery('purchase', ['date_updated'])
         . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id";
+        $row_counts = $this->helper->total_row();
         $output = array(
-            "count" =>    $this->helper->total_row(),
+            "count" =>    $row_counts,
             "rows"  =>    formatPurchase($total_rows)
         );
         echo json_encode($output);
@@ -128,15 +133,13 @@ function formatPurchase($total_rows)
             "taxAmount"             => $row['tax_amount'],
             "taxableAmount"         => $row['taxable_amount'],
             "amountAfterTax"        => $row['total_amount_after_tax'],
-            "creditNote"            => $row['credit_note'],
-            "creditNoteDate"        => $row['credit_note_date'],
             "createdBy"             => $row['created_by'],
             "dateUpdated"           => $row['date_updated'],
             "paymentStatus"         => $row['payment_status'],
             "amountPaid"            => $row['amount_paid'],
-            "products"              => json_decode($row['products']),
             "gstNumber"             => $row['gst_number'],
-            "panNumber"             => $row['pan_card']
+            "panNumber"             => $row['pan_card'],
+            "paymentHistory"       => @$row['paymentHistory']
         );
     }
     return $pages_array;

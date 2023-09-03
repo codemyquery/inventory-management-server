@@ -3,9 +3,9 @@ require_once('./helper.php');
 class Vendor
 {
     var $helper;
-    function __construct()
+    function __construct($helper)
     {
-        $this->helper = new Helper();
+        $this->helper = $helper;
     }
 
     function create_new_vendor($data)

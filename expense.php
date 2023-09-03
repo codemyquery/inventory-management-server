@@ -4,9 +4,9 @@ class Expense
 {
 
     var $helper;
-    function __construct()
+    function __construct($helper)
     {
-        $this->helper = new Helper();
+        $this->helper = $helper;
     }
 
     function create_new_expense($data)
