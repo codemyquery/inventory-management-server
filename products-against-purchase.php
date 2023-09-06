@@ -12,7 +12,7 @@ class ProductAgainstPurchase
         $this->helper->data = array(
             ':invoice_number'         =>    $this->helper->clean_data($invoiceNumber),
             ':product_name'           =>    $this->helper->clean_data(@$data['productName']),
-            ':per_peice_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
+            ':per_piece_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
             ':quantity'               =>    $this->helper->clean_data(@$data['quantity']),
             ':taxrate'                =>    $this->helper->clean_data(@$data['taxrate']),
             ':sgst'                   =>    $this->helper->clean_data(@$data['sgst']),
@@ -31,7 +31,7 @@ class ProductAgainstPurchase
         (
             invoice_number,
             product_name,
-            per_peice_price,
+            per_piece_price,
             quantity,
             taxrate,
             csgt,
@@ -49,7 +49,7 @@ class ProductAgainstPurchase
         (
             :invoice_number,
             :product_name,
-            :per_peice_price,
+            :per_piece_price,
             :quantity,
             :taxrate,
             :sgst,
