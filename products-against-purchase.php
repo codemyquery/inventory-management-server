@@ -67,4 +67,37 @@ class ProductAgainstPurchase
         )";
         return $this->helper->execute_query();
     }
+
+    function get_productagainst_purchase_products_lists($invoice_number){
+        $this->helper->query = "SELECT * FROM products_against_purchase WHERE invoice_number='$invoice_number'";
+        $total_rows = $this->helper->query_result();
+        return format_product_against_purchase($total_rows);
+    }
+}
+
+function format_product_against_purchase($total_rows){
+    @$i = 1;
+    @$pages_array = [];
+    foreach ($total_rows as $row) {
+        $pages_array[] = (object) array(
+            "id"               => $i++,
+            "invoice_number"   => $row['invoice_number'],
+            "productName"      => $row['product_name'],
+            "perPiecePrice"    => $row['per_piece_price'],          
+            "quantity"         => $row['quantity'],          
+            "taxrate"          => $row['taxrate'],          
+            "csgt"             => $row['csgt'],          
+            "sgst"             => $row['sgst'],          
+            "igst"             => $row['igst'],          
+            "totalTax"         => $row['total_tax'],          
+            "total"            => $row['total'],          
+            "total"            => $row['credit_note'],          
+            "creditNoteDate"   => $row['credit_note_date'],          
+            "createdBy"        => $row['created_by'],          
+            "dateCreated"      => $row['date_created'],          
+            "updatedBy"        => $row['updated_by'],          
+            "dateUpdated"      => $row['date_updated'],          
+        );
+    }
+    return $pages_array;
 }

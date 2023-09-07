@@ -92,15 +92,18 @@ class Purchase
     function get_purchase($invoiceNumber){
         $this->helper->data = array( ':invoiceNumber' => $this->helper->clean_data($invoiceNumber) );
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
-        $purchase = $this->helper->query_result();
+        $purchase = $this->helper->query_result()[0];
         $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
-        $paymentHistory = $paymentAgainstPurchase->get_payment_against_purchase($purchase[0]['invoice_number']);
-        $purchase[0]['paymentHistory'] = $paymentHistory;
-        echo json_encode(formatPurchase($purchase)[0]);
+        $paymentHistory = $paymentAgainstPurchase->get_payment_against_purchase($purchase['invoice_number']);
+        $productAgainstPurchase = new ProductAgainstPurchase($this->helper);
+        $products = $productAgainstPurchase->get_productagainst_purchase_products_lists($purchase['invoice_number']);
+        $formattedData = formatPurchase($purchase, $paymentHistory, $products);
+        echo json_encode($formattedData);
     }
 
     function get_purchase_list()
     {
+        $i = 0;
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
         . $this->helper->getSortingQuery('purchase', ['date_updated'])
         . $this->helper->getPaginationQuery();
@@ -108,39 +111,43 @@ class Purchase
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id";
         $row_counts = $this->helper->total_row();
+        $pages_array = [];
+        foreach ($total_rows as $row) {
+            $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
+            $paymentHistory = $paymentAgainstPurchase->get_payment_against_purchase($row['invoice_number']);
+            $productAgainstPurchase = new ProductAgainstPurchase($this->helper);
+            $products = $productAgainstPurchase->get_productagainst_purchase_products_lists($row['invoice_number']);    
+            $pages_array[] = formatPurchase($row, $products, $paymentHistory);
+        }
         $output = array(
             "count" =>    $row_counts,
-            "rows"  =>    formatPurchase($total_rows)
+            "rows"  =>    $pages_array
         );
         echo json_encode($output);
     }
 }
 
-function formatPurchase($total_rows)
+function formatPurchase($row, $paymentHistory, $products)
 {
-    @$i = 0;
-    @$pages_array = [];
-    foreach ($total_rows as $row) {
-        $pages_array[] = (object) array(
-            "id"                    => ++$i,
-            "cateogry"              => $row['cateogry'],
-            "invoiceDate"           => $row['invoice_date'],
-            "invoiceNumber"         => $row['invoice_number'],
-            "vendorName"            => $row['vendor_name'],
-            "vendorId"              => $row['vendor_id'],
-            "transportCharges"      => $row['transport_charges'],
-            "taxType"               => $row['tax_type'],
-            "taxAmount"             => $row['tax_amount'],
-            "taxableAmount"         => $row['taxable_amount'],
-            "amountAfterTax"        => $row['total_amount_after_tax'],
-            "createdBy"             => $row['created_by'],
-            "dateUpdated"           => $row['date_updated'],
-            "paymentStatus"         => $row['payment_status'],
-            "amountPaid"            => $row['amount_paid'],
-            "gstNumber"             => $row['gst_number'],
-            "panNumber"             => $row['pan_card'],
-            "paymentHistory"       => @$row['paymentHistory']
-        );
-    }
-    return $pages_array;
+    return (object) array(
+        "id"                    => $row['id'],
+        "cateogry"              => $row['cateogry'],
+        "invoiceDate"           => $row['invoice_date'],
+        "invoiceNumber"         => $row['invoice_number'],
+        "vendorName"            => $row['vendor_name'],
+        "vendorId"              => $row['vendor_id'],
+        "transportCharges"      => $row['transport_charges'],
+        "taxType"               => $row['tax_type'],
+        "taxAmount"             => $row['tax_amount'],
+        "taxableAmount"         => $row['taxable_amount'],
+        "amountAfterTax"        => $row['total_amount_after_tax'],
+        "createdBy"             => $row['created_by'],
+        "dateUpdated"           => $row['date_updated'],
+        "paymentStatus"         => $row['payment_status'],
+        "amountPaid"            => $row['amount_paid'],
+        "gstNumber"             => $row['gst_number'],
+        "panNumber"             => $row['pan_card'],
+        "paymentHistory"        => @$paymentHistory,
+        "products"              => @$products
+    );
 }
