@@ -11,9 +11,11 @@ class Helper
 	var $data;
 	var $statement;
 	var $filedata;
+	var $printError;
 
 	function __construct()
 	{
+		$this->printError = false;
 		$this->host = 'localhost';
 		$this->username = 'root';
 		$this->password = '';
@@ -25,8 +27,15 @@ class Helper
 
 	function execute_query()
 	{
+		if($this->printError){
+			$this->connect->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );
+		}
 		$this->statement = $this->connect->prepare($this->query);
-		return $this->statement->execute($this->data);
+		$result = $this->statement->execute($this->data);
+		if($this->printError){
+			print_r($this->connect->errorInfo());
+		}
+		return $result;
 	}
 
 	function total_row()

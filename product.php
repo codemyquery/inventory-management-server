@@ -19,21 +19,23 @@ class Product
             ':created_by'             =>    @$_SESSION["admin_id"] || 1,
             ':date_created'           =>    $this->helper->get_current_datetimestamp()
         );
-        $this->helper->query = "SELECT * FROM products WHERE product_name='" . $data['productName'] . "'";
-        if ($this->helper->total_row() !== 0) {
+        $productName = $data['productName'];
+        $this->helper->query = "SELECT * FROM products WHERE product_name='$productName'";
+        if ($this->helper->total_row() > 0) {
             $perPiecePrice = 0;
             $product = $this->helper->query_result()[0];
             $totalQuantity = ($product['quantity'] + $data['quantity']);
+            $userId = @$_SESSION["admin_id"] || 1;
             if($data['perPiecePrice'] > $product['per_piece_price']){
                 $perPiecePrice = $data['perPiecePrice'];
             }else{
                 $perPiecePrice = $product['per_piece_price'];
             }
-            $this->helper->query = "UPDATE products set 
-            quantity='" . $totalQuantity . "', 
-            per_piece_price='" . $perPiecePrice . "',
-            updated_by='" . @$_SESSION["admin_id"] || 1 . "',
-            WHERE id='" . $product['id'] . "'";
+            $this->helper->query = "UPDATE products set  
+            quantity='$totalQuantity', 
+            per_piece_price='$perPiecePrice', 
+            updated_by='$userId' 
+            WHERE product_name='$productName'";
             return $this->helper->execute_query();
         } else {
             $this->helper->query = "INSERT INTO products 
