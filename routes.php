@@ -39,13 +39,20 @@ if ($page === 'login') {
 	$purchase = new Purchase($helper);
 	if ($method === 'GET') {
 		if ($action === 'getPurchaseList') {
-			$purchase->get_purchase_list();
+			$result = $purchase->get_purchase_list();
 		} else if ($action === 'getPurchase') {
-			$purchase->get_purchase($itemID);
+			$result = $purchase->get_purchase($itemID);
 		}
+		echo json_encode($result);
 	} else if ($method === 'POST') { // For Create request
 		if ($action === 'addPurchase') {
 			$result = $purchase->create_purchase_order($bodyRawData['data']);
+		}
+		if (!$result) http_response_code(BAD_REQUEST);
+		echo json_encode(array('status'    =>    $result));
+	} else if ($method === 'PUT'){
+		if($action === 'updatePayments'){
+			$result = $purchase->update_payment_history($bodyRawData['data']);
 		}
 		if (!$result) http_response_code(BAD_REQUEST);
 		echo json_encode(array('status'    =>    $result));
@@ -69,10 +76,11 @@ if ($page === 'login') {
 		echo json_encode(array('status'    =>    $result));
 	} else if ($method === "GET") { // For fetch requests
 		if ($action === 'getVendorList') {
-			$vendor->get_vendor_list();
+			$result = $vendor->get_vendor_list();
 		} else if ($action === 'getVendor') {
-			$vendor->get_vendor($itemID);
+			$result = $vendor->get_vendor($itemID);
 		}
+		echo json_encode($result);
 	} else {
 		http_response_code(METHOD_NOT_ALLOWED);
 	}
@@ -81,8 +89,9 @@ if ($page === 'login') {
 	$product = new Product($helper);
 	if ($method === "GET") { // For fetch requests
 		if ($action === 'getProductList') {
-			$product->get_product_list();
+			$result = $product->get_product_list();
 		}
+		echo json_encode($result);
 	} else if ($method === "POST") {
 		if ($action === 'addProduct') {
 			$result = $product->create_new_product($bodyRawData['data']);

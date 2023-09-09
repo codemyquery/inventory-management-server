@@ -69,7 +69,27 @@ class ProductAgainstPurchase
     }
 
     function get_productagainst_purchase_products_lists($invoice_number){
-        $this->helper->query = "SELECT * FROM products_against_purchase WHERE invoice_number='$invoice_number'";
+        $this->helper->query = "SELECT 
+        products_against_purchase.invoice_number ,
+        products_against_purchase.product_name ,
+        products_against_purchase.per_piece_price ,
+        products_against_purchase.quantity ,
+        products_against_purchase.taxrate ,
+        products_against_purchase.csgt ,
+        products_against_purchase.sgst ,
+        products_against_purchase.igst ,
+        products_against_purchase.total_tax ,
+        products_against_purchase.total ,
+        products_against_purchase.credit_note ,
+        products_against_purchase.credit_note_date ,
+        products_against_purchase.created_by ,
+        products_against_purchase.date_created ,
+        products_against_purchase.updated_by ,
+        products_against_purchase.date_updated, 
+        products.hsn_sac as hsnSac
+        FROM products_against_purchase 
+        INNER JOIN products ON products_against_purchase.product_name = products.product_name 
+        WHERE invoice_number='$invoice_number'";
         $total_rows = $this->helper->query_result();
         return format_product_against_purchase($total_rows);
     }
@@ -83,15 +103,16 @@ function format_product_against_purchase($total_rows){
             "id"               => $i++,
             "invoice_number"   => $row['invoice_number'],
             "productName"      => $row['product_name'],
-            "perPiecePrice"    => $row['per_piece_price'],          
-            "quantity"         => $row['quantity'],          
-            "taxrate"          => $row['taxrate'],          
-            "csgt"             => $row['csgt'],          
-            "sgst"             => $row['sgst'],          
-            "igst"             => $row['igst'],          
-            "totalTax"         => $row['total_tax'],          
-            "total"            => $row['total'],          
-            "total"            => $row['credit_note'],          
+            "hsnSac"           => $row['hsnSac'],
+            "perPiecePrice"    => (float)$row['per_piece_price'],          
+            "quantity"         => (int)$row['quantity'],          
+            "taxrate"          => (float)$row['taxrate'],          
+            "cgst"             => (float)$row['csgt'],          
+            "sgst"             => (float)$row['sgst'],          
+            "igst"             => (float)$row['igst'],          
+            "totalTax"         => (float)$row['total_tax'],          
+            "total"            => (float)$row['total'],          
+            "creditNote"       => $row['credit_note'],          
             "creditNoteDate"   => $row['credit_note_date'],          
             "createdBy"        => $row['created_by'],          
             "dateCreated"      => $row['date_created'],          

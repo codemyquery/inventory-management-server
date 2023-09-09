@@ -48,8 +48,11 @@ class Vendor
 
     function get_vendor($vendorId){
         $this->helper->query = "SELECT *FROM vendor WHERE vendor_id='$vendorId'";
-        $vendor = $this->helper->query_result();
-        echo json_encode(formatVendorOutput($vendor)[0]);
+        if($this->helper->total_row() === 0){
+            return null;
+        }
+        $vendor = $this->helper->query_result()[0];
+        return formatVendorOutput($vendor);
     }
 
     function get_vendor_list()
@@ -61,29 +64,26 @@ class Vendor
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
         $total_Count = $this->helper->query_result();
-        $output = array(
+        foreach ($total_rows as $row) {
+            $pages_array[] = formatVendorOutput($row);
+        }
+        return array(
             "count" =>    (int)$total_Count[0]['count'],
-            "rows"  =>    formatVendorOutput($total_rows),
+            "rows"  =>    $pages_array,
         );
-        echo json_encode($output);
     }
 }
 
-function formatVendorOutput($total_rows)
+function formatVendorOutput($row)
 {
-    @$i = 0;
-    @$pages_array = [];
-    foreach ($total_rows as $row) {
-        $pages_array[] = (object) array(
-            "id" => $row['vendor_id'],
-            "vendor" => $row['vendor_name'],
-            "dateUpdate" => $row['date_updated'],
-            "emailVendor" => $row['email'],
-            "mobileVendor" => $row['mobile'],
-            "addressVendor" => $row['address'],
-            "gstNumberVendor" => $row['gst_number'],
-            "panNumberVendor" => $row['pan_card'],
-        );
-    }
-    return $pages_array;
+    return (object) array(
+        "id" => $row['vendor_id'],
+        "vendor" => $row['vendor_name'],
+        "dateUpdate" => $row['date_updated'],
+        "emailVendor" => $row['email'],
+        "mobileVendor" => $row['mobile'],
+        "addressVendor" => $row['address'],
+        "gstNumberVendor" => $row['gst_number'],
+        "panNumberVendor" => $row['pan_card'],
+    );
 }
