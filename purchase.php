@@ -201,7 +201,7 @@ class Purchase
         vendor.gst_number,
         vendor.pan_card 
         FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
-            . $this->helper->getSortingQuery('purchase', ['date_updated'])
+            . $this->helper->getSortingQuery('purchase', t_purchase($_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
@@ -246,4 +246,21 @@ function formatPurchase($row, $paymentHistory, $products)
         "paymentHistory"        => @$paymentHistory,
         "products"              => @$products
     );
+}
+
+function t_purchase($fieldName){
+    switch ($fieldName) {
+        case 'dateUpdated':
+            return 'date_updated';
+        case 'paymentStatus':
+            return 'payment_status';
+        case 'invoiceDate':
+            return 'invoice_date';
+        case 'cateogry':
+            return 'cateogry';
+        case 'invoiceNumber':
+            return 'invoice_number';
+        default:
+            return '';
+    }
 }

@@ -134,12 +134,12 @@ class Helper
 		}
 	}
 
-	function getSortingQuery( $tableName, $allowedFileds)
+	function getSortingQuery( $tableName, $fieldName )
 	{
-		$orderBy  = @$_GET['orderBy']; // FieldName
-		$order  = @$_GET['order']; // ASC/DESC
-		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
-			return " ORDER BY " .$tableName .".". $orderBy . " " . $order;
+		// FieldName -> $fieldName
+		$order = @$_GET['order']; // Sorting Order ASC/DESC
+		if (strlen($fieldName) > 0 && strlen($order) > 0) {
+			return " ORDER BY " .$tableName .".". $fieldName . " " . $order;
 		} else {
 			return "";
 		}

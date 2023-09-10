@@ -58,9 +58,8 @@ class Vendor
     function get_vendor_list()
     {
         $this->helper->query = "SELECT *FROM vendor "
-            . $this->helper->getSortingQuery('vendor',['vendor_name', 'date_update'])
+            . $this->helper->getSortingQuery('vendor', t_vendor($_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
-
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
         $total_Count = $this->helper->query_result();
@@ -79,11 +78,22 @@ function formatVendorOutput($row)
     return (object) array(
         "id" => $row['vendor_id'],
         "vendor" => $row['vendor_name'],
-        "dateUpdate" => $row['date_updated'],
+        "dateUpdated" => $row['date_updated'],
         "emailVendor" => $row['email'],
         "mobileVendor" => $row['mobile'],
         "addressVendor" => $row['address'],
         "gstNumberVendor" => $row['gst_number'],
         "panNumberVendor" => $row['pan_card'],
     );
+}
+
+function t_vendor($fieldName){
+    switch ($fieldName) {
+        case 'dateUpdated':
+            return 'date_updated';
+        case 'vendor':
+            return 'vendor_name';
+        default:
+            return '';
+    }
 }
