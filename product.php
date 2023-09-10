@@ -3,9 +3,9 @@ require_once('./helper.php');
 class Product
 {
     var $helper;
-    function __construct()
+    function __construct($helper)
     {
-        $this->helper = new Helper();
+        $this->helper = $helper;
     }
 
     function create_new_product($data)
@@ -13,42 +13,93 @@ class Product
         $this->helper->data = array(
             ':product_name'           =>    $this->helper->clean_data(@$data['productName']),
             ':hsn_sac'                =>    $this->helper->clean_data(@$data['hsnSac']),
-            ':per_peice_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
+            ':per_piece_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
             ':quantity'               =>    $this->helper->clean_data(@$data['quantity']),
-            ':created_by'             =>    @$_SESSION["admin_id"] || 1
+            ':taxrate'                =>    $this->helper->clean_data(@$data['taxrate']),
+            ':created_by'             =>    @$_SESSION["admin_id"] || 1,
+            ':date_created'           =>    $this->helper->get_current_datetimestamp()
         );
-        $this->helper->query = "INSERT INTO products (product_name, hsn_sac, per_peice_price, quantity, created_by)  
-        VALUES (:product_name,:hsn_sac,:per_peice_price,:quantity,:created_by)";
+        $this->helper->query = "INSERT INTO products 
+        (
+            product_name, 
+            hsn_sac, 
+            per_piece_price, 
+            quantity, 
+            taxrate, 
+            created_by, 
+            date_created
+        ) 
+        VALUES (
+            :product_name,
+            :hsn_sac,
+            :per_piece_price,
+            :quantity,
+            :taxrate,
+            :created_by,
+            :date_created
+        )";
         return $this->helper->execute_query();
+    }
+
+    function get_product($productName){
+        $this->helper->query = "SELECT * FROM products WHERE product_name='$productName'";
+        if($this->helper->total_row() === 1){
+            return formatProductOutput($this->helper->query_result()[0]);
+        }else{
+            return null;
+        }
+    }
+
+    function update_product($productToUpdate, $dbProductData){
+        $productName = $productToUpdate['productName'];
+        $perPiecePrice = 0;
+        $dbProductData = $dbProductData !== null ? $dbProductData : $this->get_product($productName);
+        if($dbProductData !== null){
+            $productToUpdateQuantity =  $productToUpdate['quantity'];
+            $dbProductDataQuantity =  $dbProductData->quantity;
+            $totalQuantity = (float)$productToUpdateQuantity + (float)$dbProductDataQuantity;
+            $userId = @$_SESSION["admin_id"] || 1;
+            if($productToUpdate['perPiecePrice'] > $dbProductData->perPiecePrice){
+                $perPiecePrice = $productToUpdate['perPiecePrice'];
+            }else{
+                $perPiecePrice = $dbProductData->perPiecePrice;
+            }
+            $this->helper->query = "UPDATE products SET quantity='$totalQuantity',per_piece_price='$perPiecePrice',updated_by='$userId' WHERE product_name='$productName'";
+            return $this->helper->execute_query();
+        }else{
+            return $productName . " not found.";
+        }
     }
 
     function get_product_list()
     {
-        $this->helper->query = "SELECT product_name id, product_name, hsn_sac, per_peice_price, quantity, created_by, date_updated FROM products " . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']) . $this->helper->getSortingQuery(['product_name', 'date_update']) . $this->helper->getPaginationQuery();
+        $this->helper->query = "SELECT product_name id, product_name, hsn_sac, per_piece_price, quantity, created_by, date_updated FROM products "
+            . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated'])
+            . $this->helper->getSortingQuery('products',['product_name', 'dateUpdated'])
+            . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT COUNT(DISTINCT product_name) as count FROM products ". $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);
-        $total_Count = $this->helper->query_result();
-        $output = array(
-            "count" =>    (int)$total_Count[0]['count'],
-            "rows"  =>    formatProductOutput($total_rows),
+        $this->helper->query = "SELECT product_name FROM products " . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);
+        $pages_array = [];
+        $id = 1;
+        foreach ($total_rows as $row) {
+            $row['id'] = $id++;
+            $pages_array[] = formatProductOutput($row);
+        }
+        return array(
+            "count" =>    (int)$this->helper->total_row(),
+            "rows"  =>    $pages_array,
         );
-        echo json_encode($output);
     }
 }
 
-function formatProductOutput($total_rows)
+function formatProductOutput($row)
 {
-    @$i = 0;
-    @$pages_array = [];
-    foreach ($total_rows as $row) {
-        $pages_array[] = (object) array(
-            "id" => ++$i,
-            "productName" => $row['product_name'],
-            "hsnSac" => $row['hsn_sac'],
-            "perPeicePrice" => $row['per_peice_price'],
-            "quantity" => $row['quantity'],
-            "dateUpdate" => $row['date_updated']
-        );
-    }
-    return $pages_array;
+    return (object) array(
+        "id"            => $row['id'],
+        "productName"   => $row['product_name'],
+        "hsnSac"        => $row['hsn_sac'],
+        "perPiecePrice" => $row['per_piece_price'],
+        "quantity"      => $row['quantity'],
+        "dateUpdate"    => $row['date_updated']
+    );;
 }

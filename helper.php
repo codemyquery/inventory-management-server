@@ -11,9 +11,11 @@ class Helper
 	var $data;
 	var $statement;
 	var $filedata;
+	var $printError;
 
 	function __construct()
 	{
+		$this->printError = false;
 		$this->host = 'localhost';
 		$this->username = 'root';
 		$this->password = '';
@@ -25,8 +27,15 @@ class Helper
 
 	function execute_query()
 	{
+		if($this->printError){
+			$this->connect->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );
+		}
 		$this->statement = $this->connect->prepare($this->query);
-		return $this->statement->execute($this->data);
+		$result = $this->statement->execute($this->data);
+		if($this->printError){
+			print_r($this->connect->errorInfo());
+		}
+		return $result;
 	}
 
 	function total_row()
@@ -125,12 +134,12 @@ class Helper
 		}
 	}
 
-	function getSortingQuery($allowedFileds)
+	function getSortingQuery( $tableName, $fieldName )
 	{
-		$orderBy  = @$_GET['orderBy']; // FieldName
-		$order  = @$_GET['order']; // ASC/DESC
-		if (strlen($orderBy) > 0 && strlen($order) > 0 && in_array($orderBy, $allowedFileds)) {
-			return " ORDER BY " . $orderBy . " " . $order;
+		// FieldName -> $fieldName
+		$order = @$_GET['order']; // Sorting Order ASC/DESC
+		if (strlen($fieldName) > 0 && strlen($order) > 0) {
+			return " ORDER BY " .$tableName .".". $fieldName . " " . $order;
 		} else {
 			return "";
 		}
@@ -163,6 +172,13 @@ class Helper
 		return $query;
 	}
 
+	function get_current_datetimestamp(){
+		return date("Y-m-d") . ' ' . date("H:i:s", STRTOTIME(date('h:i:sa')));
+	}
+
+	function delete_query_from_array($arrayData){
+		return " (".str_repeat("?,", count($arrayData) - 1)."?)";
+	}
 
 	/* 
 	function admin_session_private()
