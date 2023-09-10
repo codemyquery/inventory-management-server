@@ -83,7 +83,8 @@ class ProductAgainstPurchase
             for ($i = 0; $i < count($products); $i++) {
                 $this->helper->query = "UPDATE products_against_purchase SET 
                 credit_note='$creditNoteNumber',
-                credit_note_date='$creditNoteDate'
+                credit_note_date='$creditNoteDate',
+                updated_by='$adminId'
                 WHERE invoice_number='$invoiceNumber' AND product_name='$products[$i]'";
                 if (!$this->helper->execute_query()) {
                     throw new Exception("Error in Processing credit note request", 1);

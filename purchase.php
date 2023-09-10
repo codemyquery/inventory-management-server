@@ -85,13 +85,15 @@ class Purchase
                     }
                 }
                 @$paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
-                if ($data['amountPaid'] <= $data['amountAfterTax']) {
-                    $paymentDate = $data['amountPaid'] == $data['amountAfterTax'] ? $data['paymentDate'] : $data['invoiceDate'];
-                    if (!$paymentAgainstPuchase->create_payment_history($data['invoiceNumber'], $data['amountPaid'], $paymentDate)) {
-                        throw new Exception('Purchase record insertion for full paid failed against purchase');
-                    }
-                } else {
-                    throw new Exception('Amount paid is greater than Amount after Tax');
+                if($data['paymentStatus'] != 'Full Credit'){
+                    if ($data['amountPaid'] <= $data['amountAfterTax']) {
+                        $paymentDate = $data['amountPaid'] == $data['amountAfterTax'] ? $data['paymentDate'] : $data['invoiceDate'];
+                        if (!$paymentAgainstPuchase->create_payment_history($data['invoiceNumber'], $data['amountPaid'], $paymentDate)) {
+                            throw new Exception('Purchase record insertion for full paid failed against purchase');
+                        }
+                    } else {
+                        throw new Exception('Amount paid is greater than Amount after Tax');
+                    }    
                 }
                 $this->helper->connect->commit();
             } else {
