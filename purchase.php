@@ -113,19 +113,19 @@ class Purchase
             $paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
             $sum = $paymentAgainstPuchase->get_sum_of_payment_against_purchase($data['invoiceNumber']);
             if (($sum + $data['amountPaid']) <= $purchaseRecord->amountAfterTax) {
-                if ($paymentAgainstPuchase->create_payment_history( $invoiceNumber, $data['amountPaid'], $data['paymentDate'] )) {
+                if ($paymentAgainstPuchase->create_payment_history($invoiceNumber, $data['amountPaid'], $data['paymentDate'])) {
                     if ($sum + $data['amountPaid'] == $purchaseRecord->amountAfterTax) {
                         $this->helper->query = "UPDATE purchase SET payment_status='Full Paid' WHERE invoice_number='$invoiceNumber'";
-                        if(!$this->helper->execute_query()){
+                        if (!$this->helper->execute_query()) {
                             throw new Exception("Error Processing Request in updating payment status", 1);
                         }
-                    }else if($purchaseRecord->paymentStatus == "Full Credit"){
+                    } else if ($purchaseRecord->paymentStatus == "Full Credit") {
                         $this->helper->query = "UPDATE purchase SET payment_status='Partial Paid' WHERE invoice_number='$invoiceNumber'";
-                        if(!$this->helper->execute_query()){
+                        if (!$this->helper->execute_query()) {
                             throw new Exception("Error Processing Request in updating payment status", 1);
                         }
                     }
-                }else{
+                } else {
                     throw new Exception("Error processing request for adding payment history", 1);
                 }
             } else {
@@ -143,7 +143,29 @@ class Purchase
     function get_purchase($invoiceNumber)
     {
         $this->helper->data = array(':invoiceNumber' => $this->helper->clean_data($invoiceNumber));
-        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
+        $this->helper->query = "SELECT 
+        purchase.id,
+        purchase.sold_by,
+        purchase.cateogry,
+        purchase.invoice_date,
+        purchase.invoice_number,
+        purchase.tax_type,
+        purchase.cgst,sgst,
+        purchase.igst,
+        purchase.tax_amount,
+        purchase.taxable_amount,
+        purchase.total_amount_after_tax,
+        purchase.transport_charges,
+        purchase.payment_status,
+        purchase.created_by,
+        purchase.date_created,
+        purchase.updated_by,
+        purchase.date_updated,
+        vendor.vendor_id ,
+        vendor.vendor_name,
+        vendor.gst_number,
+        vendor.pan_card 
+        FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
         $purchase = $this->helper->query_result()[0];
         $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
         $paymentHistory = $paymentAgainstPurchase->get_payments_against_purchase($purchase['invoice_number']);
@@ -154,13 +176,35 @@ class Purchase
 
     function get_purchase_list()
     {
-        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
+        $this->helper->query = "SELECT 
+        purchase.id,
+        purchase.sold_by,
+        purchase.cateogry,
+        purchase.invoice_date,
+        purchase.invoice_number,
+        purchase.tax_type,
+        purchase.cgst,sgst,
+        purchase.igst,
+        purchase.tax_amount,
+        purchase.taxable_amount,
+        purchase.total_amount_after_tax,
+        purchase.transport_charges,
+        purchase.payment_status,
+        purchase.created_by,
+        purchase.date_created,
+        purchase.updated_by,
+        purchase.date_updated,
+        vendor.vendor_id ,
+        vendor.vendor_name,
+        vendor.gst_number,
+        vendor.pan_card 
+        FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
             . $this->helper->getSortingQuery('purchase', ['date_updated'])
             . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
-        $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id";
-        $row_counts = $this->helper->total_row();
+        $this->helper->query = "SELECT COUNT(id) as totalRows FROM purchase";
+        $row_counts = $this->helper->query_result()[0];
         $pages_array = [];
         $i = 1;
         foreach ($total_rows as $row) {
@@ -172,7 +216,7 @@ class Purchase
             $pages_array[] = formatPurchase($row, $products, $paymentHistory);
         }
         return array(
-            "count" =>    $row_counts,
+            "count" =>    (int)$row_counts['totalRows'],
             "rows"  =>    $pages_array
         );
     }
