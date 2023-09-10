@@ -8,7 +8,8 @@ class ProductAgainstPurchase
         $this->helper = $helper;
     }
 
-    function create_product_against_purchase($data, $invoiceNumber){
+    function create_product_against_purchase($data, $invoiceNumber)
+    {
         $this->helper->data = array(
             ':invoice_number'         =>    $this->helper->clean_data($invoiceNumber),
             ':product_name'           =>    $this->helper->clean_data(@$data['productName']),
@@ -68,7 +69,36 @@ class ProductAgainstPurchase
         return $this->helper->execute_query();
     }
 
-    function get_productagainst_purchase_products_lists($invoice_number){
+    function add_credit_note($data)
+    {
+        try {
+            $this->helper->connect->beginTransaction();
+            $creditNoteDate = $this->helper->clean_data(@$data['creditNoteDate']);
+            $creditNoteDate = new DateTime($creditNoteDate);
+            $creditNoteDate = $creditNoteDate->format('Y-m-d');
+            $creditNoteNumber = $this->helper->clean_data(@$data['creditNoteNumber']);
+            $invoiceNumber = $this->helper->clean_data(@$data['invoiceNumber']);
+            $adminId = @$_SESSION["admin_id"] || 1;
+            $products = $data['products'];
+            for ($i = 0; $i < count($products); $i++) {
+                $this->helper->query = "UPDATE products_against_purchase SET 
+                credit_note='$creditNoteNumber',
+                credit_note_date='$creditNoteDate'
+                WHERE invoice_number='$invoiceNumber' AND product_name='$products[$i]'";
+                if (!$this->helper->execute_query()) {
+                    throw new Exception("Error in Processing credit note request", 1);
+                }
+            }
+            $this->helper->connect->commit();
+        } catch (\Throwable $th) {
+            $this->helper->connect->rollBack();
+            return false;
+        }
+        return true;
+    }
+
+    function get_productagainst_purchase_products_lists($invoice_number)
+    {
         $this->helper->query = "SELECT 
         products_against_purchase.invoice_number ,
         products_against_purchase.product_name ,
@@ -95,7 +125,8 @@ class ProductAgainstPurchase
     }
 }
 
-function format_product_against_purchase($total_rows){
+function format_product_against_purchase($total_rows)
+{
     @$i = 1;
     @$pages_array = [];
     foreach ($total_rows as $row) {
@@ -104,20 +135,20 @@ function format_product_against_purchase($total_rows){
             "invoice_number"   => $row['invoice_number'],
             "productName"      => $row['product_name'],
             "hsnSac"           => $row['hsnSac'],
-            "perPiecePrice"    => (float)$row['per_piece_price'],          
-            "quantity"         => (int)$row['quantity'],          
-            "taxrate"          => (float)$row['taxrate'],          
-            "cgst"             => (float)$row['csgt'],          
-            "sgst"             => (float)$row['sgst'],          
-            "igst"             => (float)$row['igst'],          
-            "totalTax"         => (float)$row['total_tax'],          
-            "total"            => (float)$row['total'],          
-            "creditNote"       => $row['credit_note'],          
-            "creditNoteDate"   => $row['credit_note_date'],          
-            "createdBy"        => $row['created_by'],          
-            "dateCreated"      => $row['date_created'],          
-            "updatedBy"        => $row['updated_by'],          
-            "dateUpdated"      => $row['date_updated'],          
+            "perPiecePrice"    => (float)$row['per_piece_price'],
+            "quantity"         => (int)$row['quantity'],
+            "taxrate"          => (float)$row['taxrate'],
+            "cgst"             => (float)$row['csgt'],
+            "sgst"             => (float)$row['sgst'],
+            "igst"             => (float)$row['igst'],
+            "totalTax"         => (float)$row['total_tax'],
+            "total"            => (float)$row['total'],
+            "creditNote"       => $row['credit_note'],
+            "creditNoteDate"   => $row['credit_note_date'],
+            "createdBy"        => $row['created_by'],
+            "dateCreated"      => $row['date_created'],
+            "updatedBy"        => $row['updated_by'],
+            "dateUpdated"      => $row['date_updated'],
         );
     }
     return $pages_array;

@@ -7,6 +7,7 @@ require_once('./purchase.php');
 require_once('./vendor.php');
 require_once('./product.php');
 require_once('./expense.php');
+require_once('./products-against-purchase.php');
 $method = $_SERVER['REQUEST_METHOD'];
 $helper = new Helper();
 //*****************Allow cross origion******************** */
@@ -125,5 +126,15 @@ if ($page === 'login') {
 		echo json_encode(array('status'    =>    $result));
 	} else {
 		http_response_code(METHOD_NOT_ALLOWED);
+	}
+} else if($page === 'product-against-purchase') {
+	$result = null;
+	$productAgainstPurchase = new ProductAgainstPurchase($helper);
+	if ($method === "PUT") {
+		if ($action === 'addCreditNote') {
+			$result = $productAgainstPurchase->add_credit_note($bodyRawData['data']);
+		}
+		if (!$result) http_response_code(BAD_REQUEST);
+		echo json_encode(array('status'    =>    $result));
 	}
 }

@@ -85,11 +85,10 @@ class Product
             $row['id'] = $id++;
             $pages_array[] = formatProductOutput($row);
         }
-        $output = array(
+        return array(
             "count" =>    (int)$this->helper->total_row(),
             "rows"  =>    $pages_array,
         );
-        echo json_encode($output);
     }
 }
 

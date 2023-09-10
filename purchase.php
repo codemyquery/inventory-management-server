@@ -62,40 +62,39 @@ class Purchase
                 :transport_charges,
                 :payment_status,
                 :created_by)";
-            if($this->helper->execute_query()){
+            if ($this->helper->execute_query()) {
                 @$product = new Product($this->helper);
-                for ($i=0; $i < count($data['products']); $i++) { 
+                for ($i = 0; $i < count($data['products']); $i++) {
                     $productToUpdate = $data['products'][$i];
                     $productName = $productToUpdate['productName'];
                     $dbProductData = $product->get_product($productName);
-                    if($dbProductData === null){
-                        if(!$product->create_new_product($productToUpdate)){
+                    if ($dbProductData === null) {
+                        if (!$product->create_new_product($productToUpdate)) {
                             throw new Exception('Some product insertion failed due to some constrains');
                         }
-                    }else{
-                        if(!$product->update_product($productToUpdate, $dbProductData)){
+                    } else {
+                        if (!$product->update_product($productToUpdate, $dbProductData)) {
                             throw new Exception('Some product updation failed due to some constrains');
                         }
                     }
                 }
-                for ($i=0; $i < count($data['products']); $i++) {
+                for ($i = 0; $i < count($data['products']); $i++) {
                     @$productAgainstPurchase = new ProductAgainstPurchase($this->helper);
-                    if(!$productAgainstPurchase->create_product_against_purchase($data['products'][$i], $data['invoiceNumber'])){
+                    if (!$productAgainstPurchase->create_product_against_purchase($data['products'][$i], $data['invoiceNumber'])) {
                         throw new Exception('Some products against purchase has not inserted');
                     }
                 }
                 @$paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
-                if($paymentStatus === 'Full Paid'){
-                    if(!$paymentAgainstPuchase->create_full_paid_payment_history($data)){
+                if ($data['amountPaid'] <= $data['amountAfterTax']) {
+                    $paymentDate = $data['amountPaid'] == $data['amountAfterTax'] ? $data['paymentDate'] : $data['invoiceDate'];
+                    if (!$paymentAgainstPuchase->create_payment_history($data['invoiceNumber'], $data['amountPaid'], $paymentDate)) {
                         throw new Exception('Purchase record insertion for full paid failed against purchase');
                     }
-                }else if($paymentStatus === 'Partial Paid'){
-                    if(!$paymentAgainstPuchase->create_partial_paid_payment_history($data)){
-                        throw new Exception('Purchase record insertion for partial paid failed against purchase');
-                    }
+                } else {
+                    throw new Exception('Amount paid is greater than Amount after Tax');
                 }
                 $this->helper->connect->commit();
-            }else{
+            } else {
                 throw new Exception('Unable to insert the record for invoice table');
             }
         } catch (\Throwable $th) {
@@ -105,23 +104,45 @@ class Purchase
         return true;
     }
 
-    function update_payment_history($data){
+    function update_payment_history($data)
+    {
         try {
             $this->helper->connect->beginTransaction();
-            @$paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
-            if(!$paymentAgainstPuchase->create_partial_paid_payment_history($data)){
-                throw new Exception('Purchase record insertion for partial paid failed against purchase');
+            $invoiceNumber = $data['invoiceNumber'];
+            $purchaseRecord = $this->get_purchase($data['invoiceNumber']);
+            $paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
+            $sum = $paymentAgainstPuchase->get_sum_of_payment_against_purchase($data['invoiceNumber']);
+            if (($sum + $data['amountPaid']) <= $purchaseRecord->amountAfterTax) {
+                if ($paymentAgainstPuchase->create_payment_history( $invoiceNumber, $data['amountPaid'], $data['paymentDate'] )) {
+                    if ($sum + $data['amountPaid'] == $purchaseRecord->amountAfterTax) {
+                        $this->helper->query = "UPDATE purchase SET payment_status='Full Paid' WHERE invoice_number='$invoiceNumber'";
+                        if(!$this->helper->execute_query()){
+                            throw new Exception("Error Processing Request in updating payment status", 1);
+                        }
+                    }else if($purchaseRecord->paymentStatus == "Full Credit"){
+                        $this->helper->query = "UPDATE purchase SET payment_status='Partial Paid' WHERE invoice_number='$invoiceNumber'";
+                        if(!$this->helper->execute_query()){
+                            throw new Exception("Error Processing Request in updating payment status", 1);
+                        }
+                    }
+                }else{
+                    throw new Exception("Error processing request for adding payment history", 1);
+                }
+            } else {
+                throw new Exception("Error Processing Request for updating payment history", 1);
             }
             $this->helper->connect->commit();
         } catch (\Throwable $th) {
+            //throw $th;
             $this->helper->connect->rollBack();
             return false;
         }
         return true;
     }
 
-    function get_purchase($invoiceNumber){
-        $this->helper->data = array( ':invoiceNumber' => $this->helper->clean_data($invoiceNumber) );
+    function get_purchase($invoiceNumber)
+    {
+        $this->helper->data = array(':invoiceNumber' => $this->helper->clean_data($invoiceNumber));
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
         $purchase = $this->helper->query_result()[0];
         $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
@@ -134,20 +155,20 @@ class Purchase
     function get_purchase_list()
     {
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
-        . $this->helper->getSortingQuery('purchase', ['date_updated'])
-        . $this->helper->getPaginationQuery();
+            . $this->helper->getSortingQuery('purchase', ['date_updated'])
+            . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT * FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id";
         $row_counts = $this->helper->total_row();
         $pages_array = [];
-        $i=1;
+        $i = 1;
         foreach ($total_rows as $row) {
             $row['id'] = $i++;
             $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
             $paymentHistory = $paymentAgainstPurchase->get_payments_against_purchase($row['invoice_number']);
             $productAgainstPurchase = new ProductAgainstPurchase($this->helper);
-            $products = $productAgainstPurchase->get_productagainst_purchase_products_lists($row['invoice_number']);    
+            $products = $productAgainstPurchase->get_productagainst_purchase_products_lists($row['invoice_number']);
             $pages_array[] = formatPurchase($row, $products, $paymentHistory);
         }
         return array(
