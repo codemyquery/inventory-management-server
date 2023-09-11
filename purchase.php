@@ -201,7 +201,7 @@ class Purchase
         vendor.gst_number,
         vendor.pan_card 
         FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id"
-            . $this->helper->getSortingQuery('purchase', t_purchase($_GET['orderBy']) )
+            . $this->helper->getSortingQuery('purchase', t_purchase(@$_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
 
         $total_rows = $this->helper->query_result();

@@ -42,7 +42,7 @@ class Expense
     {
         $this->helper->query = "SELECT expense_id, date, expense_purpose, amount, payment_mode, remarks, created_by, date_updated FROM expense "
             . $this->helper->getFilterQuery(['expenseDate', 'expensePurpose', 'paymentMode', 'dateUpdated'])
-            . $this->helper->getSortingQuery('expense', t_expense($_GET['orderBy']) )
+            . $this->helper->getSortingQuery('expense', t_expense(@$_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT id FROM expense "
