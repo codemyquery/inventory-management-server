@@ -58,7 +58,7 @@ class Vendor
     function get_vendor_list()
     {
         $this->helper->query = "SELECT *FROM vendor "
-            . $this->helper->getSortingQuery('vendor', t_vendor($_GET['orderBy']) )
+            . $this->helper->getSortingQuery('vendor', t_vendor(@$_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(*) as count FROM vendor";
