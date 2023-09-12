@@ -1,4 +1,5 @@
 <?php
+require_once('./dbconfig.php');
 class Helper
 {
 	var $host;
@@ -16,11 +17,11 @@ class Helper
 	function __construct()
 	{
 		$this->printError = false;
-		$this->host = 'localhost';
-		$this->username = 'root';
-		$this->password = '';
-		$this->database = 'inventory_management';
-		$this->home_page = 'http://localhost/inventory-management-server/';
+		$this->host = HOST;
+		$this->username = USER_NAME;
+		$this->password = PASSWORD;
+		$this->database = DATABASE_NAME;
+		$this->home_page = API_HOME_PAGE;
 		$this->connect = new PDO("mysql:host=$this->host; dbname=$this->database", "$this->username", "$this->password");
 		session_start();
 	}
