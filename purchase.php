@@ -144,7 +144,6 @@ class Purchase
 
     function get_purchase($invoiceNumber)
     {
-        $this->helper->data = array(':invoiceNumber' => $this->helper->clean_data($invoiceNumber));
         $this->helper->query = "SELECT 
         purchase.id,
         purchase.sold_by,
@@ -167,7 +166,7 @@ class Purchase
         vendor.vendor_name,
         vendor.gst_number,
         vendor.pan_card 
-        FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number= :invoiceNumber";
+        FROM purchase INNER JOIN vendor ON purchase.sold_by=vendor.vendor_id WHERE invoice_number='$invoiceNumber'";
         $purchase = $this->helper->query_result()[0];
         $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
         $paymentHistory = $paymentAgainstPurchase->get_payments_against_purchase($purchase['invoice_number']);

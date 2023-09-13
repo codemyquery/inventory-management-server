@@ -33,6 +33,7 @@ class Helper
 		}
 		$this->statement = $this->connect->prepare($this->query);
 		$result = $this->statement->execute($this->data);
+		$this->data = null;
 		if($this->printError){
 			print_r($this->connect->errorInfo());
 		}
