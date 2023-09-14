@@ -87,8 +87,7 @@ class Purchase
                 @$paymentAgainstPuchase = new PaymentAgainstPurchase($this->helper);
                 if($data['paymentStatus'] != 'Full Credit'){
                     if ($data['amountPaid'] <= $data['amountAfterTax']) {
-                        $paymentDate = $data['amountPaid'] == $data['amountAfterTax'] ? $data['paymentDate'] : $data['invoiceDate'];
-                        if (!$paymentAgainstPuchase->create_payment_history($data['invoiceNumber'], $data['amountPaid'], $paymentDate)) {
+                        if (!$paymentAgainstPuchase->create_payment_history($data['invoiceNumber'], $data['amountPaid'], $data['paymentDate'])) {
                             throw new Exception('Purchase record insertion for full paid failed against purchase');
                         }
                     } else {
