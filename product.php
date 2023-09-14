@@ -74,7 +74,8 @@ class Product
     function get_product_list()
     {
         $this->helper->query = "SELECT product_name id, product_name, hsn_sac, per_piece_price, quantity, created_by, date_updated FROM products "
-            . $this->helper->getPaginationQuery();
+            . $this->helper->getPaginationQuery()
+            . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT product_name FROM products " . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);
         $pages_array = [];

@@ -153,7 +153,7 @@ class Helper
 		$operator  = @$_GET['operator']; // search opeartor
 		$value  = @$_GET['value']; // value to search
 		$field  = @$_GET['field']; // field to search
-		if (strlen($operator) > 0 && strlen($value) > 0 && in_array($operator, $Valid_Operators) && in_array($field, $allowedFileds)) {
+		if (strlen(@$operator) > 0 && strlen(@$value) > 0 && in_array(@$operator, @$Valid_Operators) && in_array(@$field, @$allowedFileds)) {
 			if($field === 'productName'){
 				switch ($operator) {
 					case '$in':
