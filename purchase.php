@@ -205,10 +205,17 @@ class Purchase
         $total_rows = $this->helper->query_result();
         $this->helper->query = "SELECT COUNT(id) as totalRows FROM purchase";
         $row_counts = $this->helper->query_result()[0];
+        $pageNumber = @$_GET['pageNumber'];
+		$itemPerPage = @$_GET['itemPerPage'];
         $pages_array = [];
-        $i = 1;
+        $id = 1;
+        if($pageNumber === 0){
+            $id = 1;
+        } else if($pageNumber > 0){
+            $id = ($itemPerPage * $pageNumber) + 1;
+        };
         foreach ($total_rows as $row) {
-            $row['id'] = $i++;
+            $row['id'] = $id++;
             $paymentAgainstPurchase = new PaymentAgainstPurchase($this->helper);
             $paymentHistory = $paymentAgainstPurchase->get_payments_against_purchase($row['invoice_number']);
             $productAgainstPurchase = new ProductAgainstPurchase($this->helper);
