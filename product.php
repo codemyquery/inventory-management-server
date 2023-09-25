@@ -73,7 +73,7 @@ class Product
 
     function get_product_list()
     {
-        $this->helper->query = "SELECT product_name id, product_name, hsn_sac, per_piece_price, quantity, created_by, date_updated FROM products "
+        $this->helper->query = "SELECT product_name id, product_name, taxrate, hsn_sac, per_piece_price, quantity, created_by, date_updated FROM products "
             . $this->helper->getPaginationQuery()
             . $this->helper->getFilterQuery(['productName', 'hsnSac', 'dateUpdated']);
         $total_rows = $this->helper->query_result();
@@ -99,6 +99,7 @@ function formatProductOutput($row)
         "hsnSac"        => $row['hsn_sac'],
         "perPiecePrice" => $row['per_piece_price'],
         "quantity"      => $row['quantity'],
-        "dateUpdate"    => $row['date_updated']
+        "dateUpdate"    => $row['date_updated'],
+        "taxrate"       => $row['taxrate']
     );;
 }
