@@ -26,6 +26,10 @@ class Helper
 		session_start();
 	}
 
+	function print_error($print) {
+		$this->printError = $print;
+	}
+
 	function execute_query()
 	{
 		if($this->printError){
@@ -35,6 +39,7 @@ class Helper
 		$result = $this->statement->execute($this->data);
 		$this->data = null;
 		if($this->printError){
+			print_r($this->query);
 			print_r($this->connect->errorInfo());
 		}
 		return $result;
@@ -86,6 +91,17 @@ class Helper
 		mail($receiver_email, $subject, $body, $headers);
 	}
 
+	function start() {
+		$this->connect->beginTransaction();
+	}
+
+	function commit(){
+		$this->connect->commit();
+	}
+
+	function rollback(){
+		$this->connect->rollBack();
+	}
 
 	function redirect($page)
 	{

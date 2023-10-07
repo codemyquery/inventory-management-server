@@ -8,6 +8,7 @@ require_once('./vendor.php');
 require_once('./product.php');
 require_once('./expense.php');
 require_once('./products-against-purchase.php');
+require_once('./Invoice.php');
 $method = $_SERVER['REQUEST_METHOD'];
 $helper = new Helper();
 //*****************Allow cross origion******************** */
@@ -136,5 +137,20 @@ if ($page === 'login') {
 		}
 		if (!$result) http_response_code(BAD_REQUEST);
 		echo json_encode(array('status'    =>    $result));
+	}
+} else if($page === 'invoice') {
+	$result = null;
+	$invoice = new Invoice($helper);
+	if ($method === "POST") {
+		if ($action === 'addInvoice') {
+			$result = $invoice->create_invoice_order($bodyRawData['data']);
+		}
+		if (!$result) http_response_code(BAD_REQUEST);
+		echo json_encode(array('status'    =>    $result));
+	} else if($method === 'GET'){
+		if ($action === 'getInvoiceList') {
+			$result = $invoice->get_invoice_list();
+		}
+		echo json_encode($result);
 	}
 }
