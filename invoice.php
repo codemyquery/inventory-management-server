@@ -18,7 +18,6 @@ class Invoice
         $billingCustomerID = "";
         $shippingCustomerID = "";
         try {
-            $this->helper->print_error(true);
             $this->helper->start();
             $customers = new Customers($this->helper);
             $billingDetails = $data['customerDetails']['billing'];
@@ -116,10 +115,8 @@ class Invoice
             }
         } catch (\Throwable $th) {
             $this->helper->rollBack();
-            $this->helper->print_error(false);
             return false;
         }
-        $this->helper->print_error(false);
         return true;
     }
 
