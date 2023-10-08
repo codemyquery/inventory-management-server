@@ -4,6 +4,7 @@ require_once('./product.php');
 require_once('./products-against-purchase.php');
 require_once('./payment-against-purchase.php');
 require_once('./customers.php');
+require_once('./products_against_invoice.php');
 class Invoice
 {
     var $helper;
@@ -103,6 +104,12 @@ class Invoice
                 :updated_by,                      
                 :date_updated)";
             if ($this->helper->execute_query()) {
+                $productAgaintsInvoice = new ProductAgainstInvoice($this->helper);
+                for ($i = 0; $i < count($data['products']); $i++) {
+                    if (!$productAgaintsInvoice->create_product_against_invoice($data['invoiceNo'],$data['products'][$i])) {
+                        throw new Exception('Some products against purchase has not inserted');
+                    }
+                }
                 $this->helper->commit();
             } else {
                 throw new Exception('Unable to insert the record for invoice table');
@@ -118,7 +125,7 @@ class Invoice
 
     function get_invoice($invoiceNumber)
     {
-        $this->helper->query = "SELECT *FROM invoice WHERE invoice_number='$invoiceNumber'";
+        $this->helper->query = "SELECT * FROM invoice WHERE invoice_number='$invoiceNumber'";
         if($this->helper->total_row() === 1){
             return formatInvoice($this->helper->query_result()[0]);
         }else{

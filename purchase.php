@@ -78,8 +78,8 @@ class Purchase
                         }
                     }
                 }
+                @$productAgainstPurchase = new ProductAgainstPurchase($this->helper);
                 for ($i = 0; $i < count($data['products']); $i++) {
-                    @$productAgainstPurchase = new ProductAgainstPurchase($this->helper);
                     if (!$productAgainstPurchase->create_product_against_purchase($data['products'][$i], $data['invoiceNumber'])) {
                         throw new Exception('Some products against purchase has not inserted');
                     }
