@@ -130,6 +130,30 @@ class Invoice
         }
     }
 
+    function get_next_invoiceNumber() {
+        $next_invoice = "BISS/";
+        $this->helper->query = "SELECT * FROM invoice ORDER BY date_created DESC LIMIT 1";
+        $row = $this->helper->query_result()[0];
+        $db_invoice_number = $row['invoice_number'];
+        $serialNo = explode("/",$db_invoice_number)[2];
+        $dbFinancialYear = explode("/",$db_invoice_number)[1];
+
+        $currentMonth = date('m');
+        $currentYear = date('Y');
+        $currentDate = date('d');
+        if($currentMonth > 3) {
+            $next_invoice_financial_year = $currentYear. '-' .($currentYear+1) ;
+        }else{
+            $next_invoice_financial_year = ($currentYear-1). '-' .$currentYear ;
+        }
+        if($dbFinancialYear !== $next_invoice_financial_year && $currentMonth === 4 && $currentDate === 1){
+            $serialNo = 1;
+        }else{
+            $serialNo = $serialNo+1;
+        }
+        return array('nextInvoice' =>  $next_invoice. $next_invoice_financial_year .'/'. $serialNo);
+    }
+
     function get_invoice_list()
     {
         $this->helper->query = "SELECT *FROM invoice "

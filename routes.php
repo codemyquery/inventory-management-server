@@ -150,6 +150,8 @@ if ($page === 'login') {
 	} else if($method === 'GET'){
 		if ($action === 'getInvoiceList') {
 			$result = $invoice->get_invoice_list();
+		} else if($action === 'getNextInvoiceNumber'){
+			$result = $invoice->get_next_invoiceNumber();
 		}
 		echo json_encode($result);
 	}
