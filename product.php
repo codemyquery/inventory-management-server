@@ -99,7 +99,7 @@ function formatProductOutput($row)
         "hsnSac"        => $row['hsn_sac'],
         "perPiecePrice" => $row['per_piece_price'],
         "quantity"      => $row['quantity'],
-        "dateUpdate"    => $row['date_updated'],
+        "dateUpdated"    => $row['date_updated'],
         "taxrate"       => $row['taxrate']
     );;
 }
