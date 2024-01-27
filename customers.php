@@ -15,8 +15,8 @@ class Customers
         $this->helper->data = array(
             ':customer_id'          =>    $this->helper->clean_data($customerData['id']),
             ':name'                 =>    $this->helper->clean_data($customerData['name']),
-            ':address'              =>    $this->helper->clean_data($customerData['phone']),
-            ':phone'                =>    $this->helper->clean_data($customerData['state']),
+            ':address'              =>    $this->helper->clean_data($customerData['address']),
+            ':phone'                =>    $this->helper->clean_data($customerData['phone']),
             ':gstin'                =>    $this->helper->clean_data($customerData['gstin']),
             ':state'                =>    $this->helper->clean_data($customerData['state']),
             ':place_of_supply'      =>    $this->helper->clean_data($customerData['placeOfSupply'])

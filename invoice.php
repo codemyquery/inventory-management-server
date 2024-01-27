@@ -56,7 +56,7 @@ class Invoice
                 ':created_by'                       =>    @$_SESSION["admin_id"] || 1,
                 ':date_created'                     =>    $this->helper->get_current_datetimestamp(),
                 ':updated_by'                       =>    NULL,
-                ':date_updated'                     =>    $this->helper->get_current_datetimestamp(),
+                ':date_updated'                     =>    $this->helper->get_current_datetimestamp()
             );
             $this->helper->query = "INSERT INTO invoice (
                 invoice_type,
@@ -124,19 +124,33 @@ class Invoice
     {
         $this->helper->query = "SELECT * FROM invoice WHERE invoice_number='$invoiceNumber'";
         if($this->helper->total_row() === 1){
-            return formatInvoice($this->helper->query_result()[0]);
+            $customers = new Customers($this->helper);
+            $invoice = $this->helper->query_result()[0];
+            $shipping_address_id = $invoice['shipping_address'];
+            $billing_address_id = $invoice['billing_address'];
+            $invoice['customerDetails'] = array(
+                'shipping' => $customers->get_customer($shipping_address_id),
+                'billing'  => $customers->get_customer($billing_address_id)
+            );
+            $productsAgainstInvoice = new ProductAgainstInvoice($this->helper);
+            $invoice['products'] = $productsAgainstInvoice->get_product_list_against_invoice($invoiceNumber);
+            return formatInvoice($invoice);
         }else{
             return null;
         }
     }
 
     function get_next_invoiceNumber() {
+        $dbFinancialYear = "";
+        $serialNo = 1;
         $next_invoice = "BISS/";
         $this->helper->query = "SELECT * FROM invoice ORDER BY date_created DESC LIMIT 1";
-        $row = $this->helper->query_result()[0];
-        $db_invoice_number = $row['invoice_number'];
-        $serialNo = explode("/",$db_invoice_number)[2];
-        $dbFinancialYear = explode("/",$db_invoice_number)[1];
+        $rows = $this->helper->query_result();
+        if(count($rows) > 0){
+            $db_invoice_number = $rows[0]['invoice_number'];
+            $serialNo = explode("/",$db_invoice_number)[2];
+            $dbFinancialYear = explode("/",$db_invoice_number)[1];
+        }
 
         $currentMonth = date('m');
         $currentYear = date('Y');
@@ -156,6 +170,7 @@ class Invoice
 
     function get_invoice_list()
     {
+        $pages_array = [];
         $this->helper->query = "SELECT *FROM invoice "
         . $this->helper->getSortingQuery('invoice', t_Invoice(@$_GET['orderBy']) )
         . $this->helper->getPaginationQuery();
@@ -163,6 +178,8 @@ class Invoice
         $this->helper->query = "SELECT COUNT(*) as count FROM invoice";
         $total_Count = $this->helper->query_result();
         foreach ($total_rows as $row) {
+            $row['products'] = null;
+            $row['customerDetails'] = null;
             $pages_array[] = formatInvoice($row);
         }
         return array(
@@ -177,7 +194,7 @@ function formatInvoice($row)
     return (object) array(
         "id"                                => $row['id'],
         "invoiceType"                       => $row['invoice_type'],
-        "invoiceNumber"                     => $row['invoice_number'],
+        "invoiceNo"                         => $row['invoice_number'],
         "invoiceDate"                       => $row['invoice_date'],
         "dispatchMode"                      => $row['dispatch_mode'],
         "reverseCharge"                     => $row['reverse_charge'],
@@ -186,17 +203,17 @@ function formatInvoice($row)
         "customerPoDate"                    => (float)$row['customer_po_date'],
         "taxableAmount"                     => (float)$row['taxable_amount'],
         "cgst"                              => (float)$row['cgst'],
-        "sgst"                              => $row['sgst'],
-        "igst"                              => $row['igst'],
-        "totalTax"                          => $row['total_tax'],
-        "gstTotalAmountAfterTaxNumber"      => $row['total_amount_after_tax'],
-        "totalDiscount"                     => $row['total_discount'],
-        "shippingAddress"                   => $row['shipping_address'],
-        "billingAddress"                    => $row['billing_address'],
+        "sgst"                              => (float)$row['sgst'],
+        "igst"                              => (float)$row['igst'],
+        "totalTax"                          => (float)$row['total_tax'],
+        "gstTotalAmountAfterTax"            => (float)$row['total_amount_after_tax'],
+        "totalDiscount"                     => (float)$row['total_discount'],
+        "customerDetails"                   => $row['customerDetails'],
         "createdBy"                         => $row['created_by'],
-        "dateCreated"                      => $row['date_created'],
-        "updatedBy"                     => $row['updated_by'],
-        "dateUpdated"                     => $row['date_updated']
+        "dateCreated"                       => $row['date_created'],
+        "updatedBy"                         => $row['updated_by'],
+        "dateUpdated"                       => $row['date_updated'],
+        "products"                          => $row['products']
     );
 }
 

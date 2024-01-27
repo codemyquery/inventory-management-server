@@ -14,7 +14,7 @@ class ProductAgainstInvoice
             ':invoice_number'     =>    $this->helper->clean_data($invoiceNumber),
             ':product_name'       =>    $this->helper->clean_data($products['productName']),
             ':quantity'           =>    $this->helper->clean_data($products['quantity']),
-            ':per_piece_price'    =>    $this->helper->clean_data($products['rate']),
+            ':per_piece_price'    =>    $this->helper->clean_data($products['perPiecePrice']),
             ':discount'           =>    $this->helper->clean_data($products['discount']),
             ':profit'             =>    $this->helper->clean_data($products['profit']),
             ':taxablevalue'       =>    $this->helper->clean_data($products['taxableValue']),
@@ -51,18 +51,28 @@ class ProductAgainstInvoice
         return $this->helper->execute_query(true);
     }
 
-    function get_product($productName){
-        $this->helper->query = "SELECT * FROM products WHERE product_name='$productName'";
-        if($this->helper->total_row() === 1){
-            return formatProductsAgainstInvoice($this->helper->query_result()[0]);
-        }else{
-            return null;
-        }
-    }
-
-    function get_product_list()
+    function get_product_list_against_invoice($itemID)
     {
-        $this->helper->query = "SELECT * FROM products_against_invoice";
+        $this->helper->query = "SELECT 
+        products_against_invoice.id, 
+        products_against_invoice.invoice_number, 
+        products.product_name, 
+        products.hsn_sac, 
+        products.quantity as quantity, 
+        products_against_invoice.product_name, 
+        products_against_invoice.quantity, 
+        products_against_invoice.per_piece_price, 
+        products_against_invoice.discount, 
+        products_against_invoice.profit, 
+        products_against_invoice.taxablevalue, 
+        products_against_invoice.cgst, 
+        products_against_invoice.sgst, 
+        products_against_invoice.igst, 
+        products_against_invoice.total 
+        FROM products_against_invoice 
+        INNER JOIN products ON products.product_name = products_against_invoice.product_name 
+        WHERE invoice_number='$itemID'";
+
         $total_rows = $this->helper->query_result();
         $pages_array = [];
         $id = 1;
@@ -77,16 +87,18 @@ class ProductAgainstInvoice
 function formatProductsAgainstInvoice($row)
 {
     return (object) array(
+        'id'                => $row['id'],
         'invoiceNumber'     => $row['invoice_number'],
         'productName'       => $row['product_name'],
-        'quantity'          => $row['quantity'],
-        'perPiecePrice'     => $row['per_piece_price'],
-        'discount'          => $row['discount'],
-        'profit'            => $row['profit'],
-        'taxablevalue'      => $row['taxablevalue'],
-        'cgst'              => $row['cgst'],
-        'sgst'              => $row['sgst'],
-        'igst'              => $row['igst'],
-        'total'             => $row['total']
+        'hsnSacCode'        => $row['hsn_sac'],
+        'quantity'          => (float)$row['quantity'],
+        'perPiecePrice'     => (float)$row['per_piece_price'],
+        'discount'          => (float)$row['discount'],
+        'profit'            => (float)$row['profit'],
+        'taxableValue'      => (float)$row['taxablevalue'],
+        'cgst'              => (float)$row['cgst'],
+        'sgst'              => (float)$row['sgst'],
+        'igst'              => (float)$row['igst'],
+        'total'             => (float)$row['total']
     );;
 }

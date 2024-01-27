@@ -152,6 +152,8 @@ if ($page === 'login') {
 			$result = $invoice->get_invoice_list();
 		} else if($action === 'getNextInvoiceNumber'){
 			$result = $invoice->get_next_invoiceNumber();
+		} else if($action === 'getInvoice'){
+			$result = $invoice->get_invoice($itemID);
 		}
 		echo json_encode($result);
 	}

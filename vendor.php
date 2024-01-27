@@ -57,6 +57,7 @@ class Vendor
 
     function get_vendor_list()
     {
+        $pages_array = [];
         $this->helper->query = "SELECT *FROM vendor "
             . $this->helper->getSortingQuery('vendor', t_vendor(@$_GET['orderBy']) )
             . $this->helper->getPaginationQuery();
