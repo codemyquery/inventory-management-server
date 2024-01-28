@@ -1,5 +1,6 @@
 <?php
 require_once('./helper.php');
+require_once('./product.php');
 class ProductAgainstInvoice
 {
     var $helper;
@@ -23,6 +24,26 @@ class ProductAgainstInvoice
             ':igst'               =>    $this->helper->clean_data($products['igst']),
             ':total'              =>    $this->helper->clean_data($products['total'])
         );
+
+        @$product = new Product($this->helper);
+        $productName = $products['productName'];
+        $dbProductData = $product->get_product($productName);
+        $productToUpdate = (object) array(
+            'productName' => $this->helper->clean_data($products['productName']),
+            'hsnSac' => $this->helper->clean_data($products['hsnSacCode']),
+            'perPiecePrice' => $this->helper->clean_data($products['perPiecePrice']),
+            'quantity' => $this->helper->clean_data($products['quantity']),
+            'taxrate' => $this->helper->clean_data($products['cgst']+$products['igst']+$products['sgst']),
+        );
+        if ($dbProductData === null) {
+            if (!$product->create_new_product($productToUpdate)) {
+                throw new Exception('Some product insertion failed due to some constrains');
+            }
+        } else {
+            if (!$product->update_product($productToUpdate, $dbProductData)) {
+                throw new Exception('Some product updation failed due to some constrains');
+            }
+        }
         $this->helper->query = "INSERT INTO products_against_invoice 
         (
              invoice_number,
@@ -48,7 +69,7 @@ class ProductAgainstInvoice
             :sgst,
             :igst,
             :total)";
-        return $this->helper->execute_query(true);
+        return $this->helper->execute_query();
     }
 
     function get_product_list_against_invoice($itemID)

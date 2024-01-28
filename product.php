@@ -11,14 +11,15 @@ class Product
     function create_new_product($data)
     {
         $this->helper->data = array(
-            ':product_name'           =>    $this->helper->clean_data(@$data['productName']),
-            ':hsn_sac'                =>    $this->helper->clean_data(@$data['hsnSac']),
-            ':per_piece_price'        =>    $this->helper->clean_data(@$data['perPiecePrice']),
-            ':quantity'               =>    $this->helper->clean_data(@$data['quantity']),
-            ':taxrate'                =>    $this->helper->clean_data(@$data['taxrate']),
+            ':product_name'           =>    $this->helper->clean_data($data['productName']),
+            ':hsn_sac'                =>    $this->helper->clean_data($data['hsnSac']),
+            ':per_piece_price'        =>    $this->helper->clean_data($data['perPiecePrice']),
+            ':quantity'               =>    $this->helper->clean_data($data['quantity']),
+            ':taxrate'                =>    $this->helper->clean_data($data['taxrate']),
             ':created_by'             =>    @$_SESSION["admin_id"] || 1,
             ':date_created'           =>    $this->helper->get_current_datetimestamp()
         );
+
         $this->helper->query = "INSERT INTO products 
         (
             product_name, 

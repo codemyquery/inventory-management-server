@@ -37,7 +37,7 @@ class Invoice
 
             $this->helper->data = array(
                 ':invoice_type'                     =>    $this->helper->clean_data($data['invoiceType']),
-                ':invoice_number'                   =>    $this->helper->clean_data($data['invoiceNo']),
+                ':invoice_number'                   =>    $this->helper->clean_data($data['invoiceNumber']),
                 ':invoice_date'                     =>    $this->helper->clean_data($data['invoiceDate']),
                 ':dispatch_mode'                    =>    $this->helper->clean_data($data['dispatchMode']),
                 ':reverse_charge'                   =>    $this->helper->clean_data($data['reverseCharge']),
@@ -105,7 +105,7 @@ class Invoice
             if ($this->helper->execute_query()) {
                 $productAgaintsInvoice = new ProductAgainstInvoice($this->helper);
                 for ($i = 0; $i < count($data['products']); $i++) {
-                    if (!$productAgaintsInvoice->create_product_against_invoice($data['invoiceNo'],$data['products'][$i])) {
+                    if (!$productAgaintsInvoice->create_product_against_invoice($data['invoiceNumber'],$data['products'][$i])) {
                         throw new Exception('Some products against purchase has not inserted');
                     }
                 }
@@ -194,7 +194,7 @@ function formatInvoice($row)
     return (object) array(
         "id"                                => $row['id'],
         "invoiceType"                       => $row['invoice_type'],
-        "invoiceNo"                         => $row['invoice_number'],
+        "invoiceNumber"                         => $row['invoice_number'],
         "invoiceDate"                       => $row['invoice_date'],
         "dispatchMode"                      => $row['dispatch_mode'],
         "reverseCharge"                     => $row['reverse_charge'],

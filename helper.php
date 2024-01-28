@@ -16,7 +16,7 @@ class Helper
 
 	function __construct()
 	{
-		$this->printError = false;
+		$this->printError = true;
 		$this->host = HOST;
 		$this->username = USER_NAME;
 		$this->password = PASSWORD;
