@@ -11,24 +11,10 @@ class ProductAgainstInvoice
 
     function create_product_against_invoice($invoiceNumber,$products)
     {
-        $this->helper->data = array(
-            ':invoice_number'     =>    $this->helper->clean_data($invoiceNumber),
-            ':product_name'       =>    $this->helper->clean_data($products['productName']),
-            ':quantity'           =>    $this->helper->clean_data($products['quantity']),
-            ':per_piece_price'    =>    $this->helper->clean_data($products['perPiecePrice']),
-            ':discount'           =>    $this->helper->clean_data($products['discount']),
-            ':profit'             =>    $this->helper->clean_data($products['profit']),
-            ':taxablevalue'       =>    $this->helper->clean_data($products['taxableValue']),
-            ':cgst'               =>    $this->helper->clean_data($products['cgst']),
-            ':sgst'               =>    $this->helper->clean_data($products['sgst']),
-            ':igst'               =>    $this->helper->clean_data($products['igst']),
-            ':total'              =>    $this->helper->clean_data($products['total'])
-        );
-
         @$product = new Product($this->helper);
         $productName = $products['productName'];
         $dbProductData = $product->get_product($productName);
-        $productToUpdate = (object) array(
+        $productToUpdate = array(
             'productName' => $this->helper->clean_data($products['productName']),
             'hsnSac' => $this->helper->clean_data($products['hsnSacCode']),
             'perPiecePrice' => $this->helper->clean_data($products['perPiecePrice']),
@@ -44,6 +30,21 @@ class ProductAgainstInvoice
                 throw new Exception('Some product updation failed due to some constrains');
             }
         }
+
+        $this->helper->data = array(
+            ':invoice_number'     =>    $this->helper->clean_data($invoiceNumber),
+            ':product_name'       =>    $this->helper->clean_data($products['productName']),
+            ':quantity'           =>    $this->helper->clean_data($products['quantity']),
+            ':per_piece_price'    =>    $this->helper->clean_data($products['perPiecePrice']),
+            ':discount'           =>    $this->helper->clean_data($products['discount']),
+            ':profit'             =>    $this->helper->clean_data($products['profit']),
+            ':taxablevalue'       =>    $this->helper->clean_data($products['taxableValue']),
+            ':cgst'               =>    $this->helper->clean_data($products['cgst']),
+            ':sgst'               =>    $this->helper->clean_data($products['sgst']),
+            ':igst'               =>    $this->helper->clean_data($products['igst']),
+            ':total'              =>    $this->helper->clean_data($products['total'])
+        );
+
         $this->helper->query = "INSERT INTO products_against_invoice 
         (
              invoice_number,
